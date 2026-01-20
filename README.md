@@ -23,11 +23,14 @@ go build -o statusline statusline.go
 
 ### 2. 配置 Claude Code
 
-編輯你的 `~/.claude/settings.json`（或是在 Claude Code 中輸入 `/config`），加入以下設定：
+編輯你的 `~/.claude/settings.json`，加入以下設定：
 
 ```json
 {
-  "customStatuslineCommand": "/Users/your-username/.claude/statusline-go/statusline"
+  "statusLine": {
+    "type": "command",
+    "command": "/Users/your-username/.claude/statusline-go/statusline"
+  }
 }
 ```
 
