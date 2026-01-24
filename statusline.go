@@ -38,28 +38,28 @@ const (
 
 // 模型價格 (per 1M tokens) - 2024 pricing
 var modelPricing = map[string]struct {
-	Input       float64
-	Output      float64
-	CacheRead   float64
-	CacheWrite  float64
+	Input      float64
+	Output     float64
+	CacheRead  float64
+	CacheWrite float64
 }{
 	"Opus": {
-		Input:       15.0,
-		Output:      75.0,
-		CacheRead:   1.5,
-		CacheWrite:  18.75,
+		Input:      15.0,
+		Output:     75.0,
+		CacheRead:  1.5,
+		CacheWrite: 18.75,
 	},
 	"Sonnet": {
-		Input:       3.0,
-		Output:      15.0,
-		CacheRead:   0.3,
-		CacheWrite:  3.75,
+		Input:      3.0,
+		Output:     15.0,
+		CacheRead:  0.3,
+		CacheWrite: 3.75,
 	},
 	"Haiku": {
-		Input:       0.25,
-		Output:      1.25,
-		CacheRead:   0.03,
-		CacheWrite:  0.30,
+		Input:      0.25,
+		Output:     1.25,
+		CacheRead:  0.03,
+		CacheWrite: 0.30,
 	},
 }
 
@@ -75,8 +75,8 @@ type Input struct {
 	Model struct {
 		DisplayName string `json:"display_name"`
 	} `json:"model"`
-	SessionID     string `json:"session_id"`
-	Workspace     struct {
+	SessionID string `json:"session_id"`
+	Workspace struct {
 		CurrentDir string `json:"current_dir"`
 	} `json:"workspace"`
 	TranscriptPath string `json:"transcript_path,omitempty"`
@@ -99,16 +99,16 @@ type Interval struct {
 
 // Usage 統計結構
 type UsageStats struct {
-	InputTokens        int64   `json:"input_tokens"`
-	OutputTokens       int64   `json:"output_tokens"`
-	CacheReadTokens    int64   `json:"cache_read_tokens"`
-	CacheWriteTokens   int64   `json:"cache_write_tokens"`
-	TotalCost          float64 `json:"total_cost"`
-	MessageCount       int     `json:"message_count"`
-	SessionCount       int     `json:"session_count"`
-	Date               string  `json:"date"`
-	Week               string  `json:"week"`
-	LastUpdated        int64   `json:"last_updated"`
+	InputTokens      int64   `json:"input_tokens"`
+	OutputTokens     int64   `json:"output_tokens"`
+	CacheReadTokens  int64   `json:"cache_read_tokens"`
+	CacheWriteTokens int64   `json:"cache_write_tokens"`
+	TotalCost        float64 `json:"total_cost"`
+	MessageCount     int     `json:"message_count"`
+	SessionCount     int     `json:"session_count"`
+	Date             string  `json:"date"`
+	Week             string  `json:"week"`
+	LastUpdated      int64   `json:"last_updated"`
 }
 
 // API Usage 結構
@@ -127,6 +127,13 @@ type APIUsage struct {
 type Result struct {
 	Type string
 	Data interface{}
+}
+
+// GitInfo 包含 Git 狀態資訊
+type GitInfo struct {
+	Branch      string
+	DirtyCount  int
+	StagedCount int
 }
 
 // SessionUsageResult 包含 session 的用量資訊
@@ -168,8 +175,8 @@ func main() {
 
 	go func() {
 		defer wg.Done()
-		branch := getGitBranch()
-		results <- Result{"git", branch}
+		gitInfo := getGitInfo()
+		results <- Result{"git", gitInfo}
 	}()
 
 	go func() {
@@ -216,18 +223,19 @@ func main() {
 
 	// 收集結果
 	var (
-		gitBranch    string
+		gitInfo      GitInfo
 		totalHours   string
 		contextUsage string
 		sessionUsage SessionUsageResult
 		dailyStats   UsageStats
+		weeklyStats  UsageStats
 		apiUsage     *APIUsage
 	)
 
 	for result := range results {
 		switch result.Type {
 		case "git":
-			gitBranch = result.Data.(string)
+			gitInfo = result.Data.(GitInfo)
 		case "hours":
 			totalHours = result.Data.(string)
 		case "context":
@@ -235,8 +243,7 @@ func main() {
 		case "session_usage":
 			sessionUsage = result.Data.(SessionUsageResult)
 		case "weekly":
-			// 保留以便日後使用
-			_ = result.Data.(UsageStats)
+			weeklyStats = result.Data.(UsageStats)
 		case "daily":
 			dailyStats = result.Data.(UsageStats)
 		case "api_usage":
@@ -251,20 +258,23 @@ func main() {
 	// 格式化輸出
 	modelDisplay := formatModel(input.Model.DisplayName)
 	projectName := filepath.Base(input.Workspace.CurrentDir)
+	gitDisplay := formatGitInfo(gitInfo)
 
 	// 第一行：基本資訊
 	fmt.Printf("%s[%s] 📂 %s%s%s | %s%s\n",
-		ColorReset, modelDisplay, projectName, gitBranch,
+		ColorReset, modelDisplay, projectName, gitDisplay,
 		contextUsage, totalHours, ColorReset)
 
 	// 第二行：API 用量限制 (Session + Weekly)
 	apiUsageInfo := formatAPIUsage(apiUsage)
 	fmt.Printf("%s│ %s%s\n", ColorDim, apiUsageInfo, ColorReset)
 
-	// 第三行：本地統計 (Session tokens/cost + 燒錢速度)
+	// 第三行：本地統計 (Session tokens/cost + 燒錢速度 + 今日/週成本 + Cache 命中率)
 	sessionInfo := formatSessionUsage(sessionUsage)
 	burnRate := calculateBurnRate(dailyStats)
-	fmt.Printf("%s│ %s | %s%s\n", ColorDim, sessionInfo, burnRate, ColorReset)
+	costInfo := formatCostStats(dailyStats, weeklyStats)
+	cacheHitRate := formatCacheHitRate(sessionUsage)
+	fmt.Printf("%s│ %s | %s | %s | %s%s\n", ColorDim, sessionInfo, burnRate, costInfo, cacheHitRate, ColorReset)
 }
 
 // 從 Keychain 獲取 OAuth Token
@@ -450,40 +460,76 @@ func formatModel(model string) string {
 	return model
 }
 
-// 獲取 Git 分支（帶快取）
-func getGitBranch() string {
-	cacheMutex.RLock()
-	if time.Now().Before(gitBranchExpires) && gitBranchCache != "" {
-		result := gitBranchCache
-		cacheMutex.RUnlock()
-		return result
-	}
-	cacheMutex.RUnlock()
+// 獲取 Git 資訊（分支名稱 + 狀態）
+func getGitInfo() GitInfo {
+	result := GitInfo{}
 
+	// 檢查是否在 Git 倉庫中
 	if _, err := os.Stat(".git"); os.IsNotExist(err) {
 		cmd := exec.Command("git", "rev-parse", "--git-dir")
 		if err := cmd.Run(); err != nil {
-			return ""
+			return result
 		}
 	}
 
+	// 獲取分支名稱
 	cmd := exec.Command("git", "branch", "--show-current")
 	output, err := cmd.Output()
 	if err != nil {
+		return result
+	}
+	result.Branch = strings.TrimSpace(string(output))
+
+	// 獲取未暫存的修改數量 (modified, deleted, untracked)
+	cmd = exec.Command("git", "status", "--porcelain")
+	output, err = cmd.Output()
+	if err != nil {
+		return result
+	}
+
+	lines := strings.Split(strings.TrimSpace(string(output)), "\n")
+	for _, line := range lines {
+		if len(line) < 2 {
+			continue
+		}
+		indexStatus := line[0]
+		workTreeStatus := line[1]
+
+		// 已暫存的檔案 (index 有狀態)
+		if indexStatus != ' ' && indexStatus != '?' {
+			result.StagedCount++
+		}
+		// 未暫存的修改 (工作區有狀態或是 untracked)
+		if workTreeStatus != ' ' || indexStatus == '?' {
+			result.DirtyCount++
+		}
+	}
+
+	return result
+}
+
+// 格式化 Git 資訊
+func formatGitInfo(info GitInfo) string {
+	if info.Branch == "" {
 		return ""
 	}
 
-	branch := strings.TrimSpace(string(output))
-	if branch == "" {
-		return ""
+	result := fmt.Sprintf(" %s⚡ %s%s", ColorCyan, info.Branch, ColorReset)
+
+	// 顯示 Git 狀態
+	if info.StagedCount > 0 || info.DirtyCount > 0 {
+		statusStr := ""
+		if info.StagedCount > 0 {
+			statusStr += fmt.Sprintf("%s+%d%s", ColorGreen, info.StagedCount, ColorReset)
+		}
+		if info.DirtyCount > 0 {
+			if statusStr != "" {
+				statusStr += "/"
+			}
+			statusStr += fmt.Sprintf("%s~%d%s", ColorOrange, info.DirtyCount, ColorReset)
+		}
+		result += fmt.Sprintf(" [%s]", statusStr)
 	}
-
-	result := fmt.Sprintf(" ⚡ %s", branch)
-
-	cacheMutex.Lock()
-	gitBranchCache = result
-	gitBranchExpires = time.Now().Add(5 * time.Second)
-	cacheMutex.Unlock()
 
 	return result
 }
@@ -886,6 +932,35 @@ func calculateBurnRate(dailyStats UsageStats) string {
 	rate := dailyStats.TotalCost / hours
 
 	return fmt.Sprintf("%s🔥$%.2f/hr%s", ColorRed, rate, ColorReset)
+}
+
+// 格式化今日/週成本
+func formatCostStats(daily, weekly UsageStats) string {
+	dailyCostStr := formatCost(daily.TotalCost)
+	weeklyCostStr := formatCost(weekly.TotalCost)
+	return fmt.Sprintf("%s📆%s%s/%s💵%s%s", ColorGold, dailyCostStr, ColorReset, ColorBlue, weeklyCostStr, ColorReset)
+}
+
+// 格式化 Cache 命中率
+func formatCacheHitRate(usage SessionUsageResult) string {
+	totalInput := usage.InputTokens + usage.CacheReadTokens
+	if totalInput == 0 {
+		return fmt.Sprintf("%s📦--%s", ColorDim, ColorReset)
+	}
+
+	hitRate := float64(usage.CacheReadTokens) * 100.0 / float64(totalInput)
+
+	// 根據命中率選擇顏色
+	var color string
+	if hitRate >= 70 {
+		color = ColorGreen
+	} else if hitRate >= 40 {
+		color = ColorYellow
+	} else {
+		color = ColorOrange
+	}
+
+	return fmt.Sprintf("%s📦%.0f%%%s", color, hitRate, ColorReset)
 }
 
 // 分析 Context 使用量
