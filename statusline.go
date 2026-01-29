@@ -800,6 +800,10 @@ func updateSession(sessionID string) {
 
 	if data, err := os.ReadFile(sessionFile); err == nil {
 		json.Unmarshal(data, &session)
+		// 如果 session 跨日，更新日期
+		if session.Date != today {
+			session.Date = today
+		}
 	} else {
 		session = Session{
 			ID:            sessionID,
@@ -1420,7 +1424,7 @@ func formatCacheHitRateShort(usage SessionUsageResult) string {
 func formatCachePercent(usage SessionUsageResult) string {
 	totalInput := usage.InputTokens + usage.CacheReadTokens
 	if totalInput == 0 {
-		return fmt.Sprintf("%s--%% %s", ColorDim, ColorReset)
+		return fmt.Sprintf("%shit --%% %s", ColorDim, ColorReset)
 	}
 
 	hitRate := float64(usage.CacheReadTokens) * 100.0 / float64(totalInput)
@@ -1434,7 +1438,7 @@ func formatCachePercent(usage SessionUsageResult) string {
 		color = ColorOrange
 	}
 
-	return fmt.Sprintf("%s%3.0f%%%s", color, hitRate, ColorReset)
+	return fmt.Sprintf("hit %s%3.0f%%%s", color, hitRate, ColorReset)
 }
 
 // 分析 Context 使用量（固定寬度）
