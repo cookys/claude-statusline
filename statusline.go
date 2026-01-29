@@ -286,9 +286,9 @@ func main() {
 	totalTokens := sessionUsage.InputTokens + sessionUsage.OutputTokens + sessionUsage.CacheReadTokens + sessionUsage.CacheWriteTokens
 	tokenStr := fmt.Sprintf("tok %s%s%s", ColorPurple, formatTokenCountFixed(totalTokens), ColorReset)
 	msgStr := fmt.Sprintf("msg %s%4d%s", ColorCyan, sessionUsage.MessageCount, ColorReset)
-	timeStr := fmt.Sprintf("⏱️%s", totalHours)
+	timeStr := fmt.Sprintf("time %s", totalHours)
 	ctxBar := formatContextBarWide(input.TranscriptPath)
-	statsCol1 := tokenStr + "  " + msgStr + "      " + timeStr
+	statsCol1 := tokenStr + "  " + msgStr + "    " + timeStr
 	statsCol2 := ctxBar
 	fmt.Printf("%s├─ %-9s │ %s│ %s│%s\n",
 		ColorDim, "Stats", padRight(statsCol1, colWidth), padRight(statsCol2, colWidth), ColorReset)
