@@ -856,9 +856,7 @@ func calculateTotalHours(currentSessionID string) string {
 	}
 
 	var totalSeconds int64
-	activeSessions := 0
 	today := time.Now().Format("2006-01-02")
-	currentTime := time.Now().Unix()
 
 	for _, entry := range entries {
 		if !strings.HasSuffix(entry.Name(), ".json") {
@@ -878,10 +876,6 @@ func calculateTotalHours(currentSessionID string) string {
 
 		if session.Date == today {
 			totalSeconds += session.TotalSeconds
-
-			if currentTime-session.LastHeartbeat < 600 {
-				activeSessions++
-			}
 		}
 	}
 
@@ -895,9 +889,6 @@ func calculateTotalHours(currentSessionID string) string {
 		timeStr = fmt.Sprintf("%dm", minutes)
 	}
 
-	if activeSessions > 1 {
-		return fmt.Sprintf("%s ×%d", timeStr, activeSessions)
-	}
 	return timeStr
 }
 
