@@ -259,13 +259,10 @@ func main() {
 	// 第一行：路徑 + Git（左）+ 模型（右對齊到表格寬度）
 	leftPart := fmt.Sprintf("📂 %s  %s", projectPath, gitDisplay)
 	modelPart := fmt.Sprintf("[%s]", modelDisplay)
-	leftWidth := visibleWidth(leftPart)
-	modelWidth := visibleWidth(modelPart)
-	padding := tableWidth - leftWidth - modelWidth
-	if padding < 2 {
-		padding = 2
-	}
-	fmt.Printf("%s%s%s%s%s\n", ColorReset, leftPart, strings.Repeat(" ", padding), modelPart, ColorReset)
+	// 用 padRight 確保左邊部分固定寬度，模型自然靠右
+	// tableWidth - modelWidth(約15) = 左邊需要的寬度
+	leftTargetWidth := tableWidth - 15 // 預留給 [💛 Opus 4.5] 約 15 格
+	fmt.Printf("%s%s%s%s\n", ColorReset, padRight(leftPart, leftTargetWidth), modelPart, ColorReset)
 
 	// 獲取月統計
 	monthlyStats := getMonthlyStats()
