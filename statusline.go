@@ -489,8 +489,8 @@ func formatAPILimitWide(usage *APIUsage, limitType string) string {
 	timeLeft := formatTimeLeftShort(resetTime)
 	color := getUsageColor(pct)
 
-	// 格式：5hr ██░░░░░░░░  23%        (3h17m)
-	return fmt.Sprintf("%s %s  %s%3d%%%s       (%s)", limitType, bar, color, pct, ColorReset, timeLeft)
+	// 格式：5hr ██░░░░░░░░  23%     (3h17m)
+	return fmt.Sprintf("%s %s  %s%3d%%%s   (%s)", limitType, bar, color, pct, ColorReset, timeLeft)
 }
 
 // 格式化剩餘時間（更短）
@@ -1597,7 +1597,7 @@ func formatNumberFixed(num int) string {
 	return fmt.Sprintf("%4d", num)
 }
 
-// 計算字串的可見寬度（排除 ANSI 碼）
+// 計算字串的可見寬度（排除 ANSI 碼，emoji 算 2 寬）
 func visibleWidth(s string) int {
 	// 移除 ANSI escape codes
 	clean := s
@@ -1612,9 +1612,63 @@ func visibleWidth(s string) int {
 		}
 		clean = clean[:start] + clean[start+end+1:]
 	}
-	// 計算 rune 數量（處理 emoji 等）
-	return len([]rune(clean))
+
+	// 計算顯示寬度（emoji 和特殊符號算 2 寬）
+	width := 0
+	for _, r := range clean {
+		w := runeWidth(r)
+		width += w
+	}
+	return width
 }
+
+// 計算單個 rune 的顯示寬度
+func runeWidth(r rune) int {
+	// Variation selectors - zero width
+	if r >= 0xFE00 && r <= 0xFE0F {
+		return 0
+	}
+	// Zero-width characters
+	if r == 0x200B || r == 0x200C || r == 0x200D || r == 0xFEFF {
+		return 0
+	}
+	// Combining characters - zero width
+	if r >= 0x0300 && r <= 0x036F {
+		return 0
+	}
+
+	// Wide characters (2 cells)
+	if r >= 0x1F300 && r <= 0x1FAFF { // Extended emoji ranges
+		return 2
+	}
+	if r >= 0x2300 && r <= 0x23FF { // Miscellaneous Technical (⏱️ U+23F1 etc.)
+		return 2
+	}
+	if r >= 0x2600 && r <= 0x26FF { // Miscellaneous Symbols (⚡ etc.)
+		return 2
+	}
+	if r >= 0x2700 && r <= 0x27BF { // Dingbats
+		return 2
+	}
+	if r >= 0x2B50 && r <= 0x2B55 { // Stars and circles
+		return 2
+	}
+	// CJK characters
+	if r >= 0x4E00 && r <= 0x9FFF { // CJK Unified Ideographs
+		return 2
+	}
+	if r >= 0x3000 && r <= 0x303F { // CJK Symbols and Punctuation
+		return 2
+	}
+	// Full-width characters
+	if r >= 0xFF00 && r <= 0xFFEF {
+		return 2
+	}
+
+	// Default: single width
+	return 1
+}
+
 
 // 右填充至指定可見寬度
 func padRight(s string, width int) string {
