@@ -252,16 +252,15 @@ func main() {
 	projectPath := formatProjectPath(input.Workspace.CurrentDir)
 	gitDisplay := formatGitInfoCompact(gitInfo)
 
-	// 表格總寬度計算：Label(11) + │ + Col1(35) + │ + Col2(35) + │ = 84
-	const tableWidth = 84
+	// 表格總寬度計算：├─ (3) + Label(9) + │ (3) + Col1(35) + │ (2) + Col2(35) + │(1) = 88
+	const tableWidth = 88
 	const colWidth = 35
 
 	// 第一行：路徑 + Git（左）+ 模型（右對齊到表格寬度）
 	leftPart := fmt.Sprintf("📂 %s  %s", projectPath, gitDisplay)
 	modelPart := fmt.Sprintf("[%s]", modelDisplay)
-	// 用 padRight 確保左邊部分固定寬度，模型自然靠右
-	// tableWidth - modelWidth(約15) = 左邊需要的寬度
-	leftTargetWidth := tableWidth - 15 // 預留給 [💛 Opus 4.5] 約 15 格
+	// [💛 Opus 4.5] = 約 13 格 (含 emoji 2 寬)
+	leftTargetWidth := tableWidth - 13
 	fmt.Printf("%s%s%s%s\n", ColorReset, padRight(leftPart, leftTargetWidth), modelPart, ColorReset)
 
 	// 獲取月統計
@@ -569,7 +568,7 @@ func formatContextBarWide(transcriptPath string) string {
 	color := getContextColor(percentage)
 	num := formatNumberFixed(contextLength)
 
-	return fmt.Sprintf("Ctx %s  %s%3d%%%s    %s", bar, color, percentage, ColorReset, num)
+	return fmt.Sprintf("Ctx  %s  %s%3d%%%s    %s", bar, color, percentage, ColorReset, num)
 }
 
 // 生成用量進度條
