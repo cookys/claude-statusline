@@ -100,16 +100,17 @@ type Interval struct {
 
 // Usage 統計結構
 type UsageStats struct {
-	InputTokens      int64   `json:"input_tokens"`
-	OutputTokens     int64   `json:"output_tokens"`
-	CacheReadTokens  int64   `json:"cache_read_tokens"`
-	CacheWriteTokens int64   `json:"cache_write_tokens"`
-	TotalCost        float64 `json:"total_cost"`
-	MessageCount     int     `json:"message_count"`
-	SessionCount     int     `json:"session_count"`
-	Date             string  `json:"date"`
-	Week             string  `json:"week"`
-	LastUpdated      int64   `json:"last_updated"`
+	InputTokens      int64              `json:"input_tokens"`
+	OutputTokens     int64              `json:"output_tokens"`
+	CacheReadTokens  int64              `json:"cache_read_tokens"`
+	CacheWriteTokens int64              `json:"cache_write_tokens"`
+	TotalCost        float64            `json:"total_cost"`
+	MessageCount     int                `json:"message_count"`
+	SessionCount     int                `json:"session_count"`
+	Date             string             `json:"date"`
+	Week             string             `json:"week"`
+	LastUpdated      int64              `json:"last_updated"`
+	SessionCosts     map[string]float64 `json:"session_costs,omitempty"` // 追蹤每個 session 的已記錄成本
 }
 
 // API Usage 結構
@@ -172,7 +173,7 @@ func main() {
 	var wg sync.WaitGroup
 
 	// 並行獲取各種資訊
-	wg.Add(7)
+	wg.Add(6)
 
 	go func() {
 		defer wg.Done()
@@ -184,12 +185,6 @@ func main() {
 		defer wg.Done()
 		totalHours := calculateTotalHours(input.SessionID)
 		results <- Result{"hours", totalHours}
-	}()
-
-	go func() {
-		defer wg.Done()
-		contextInfo := analyzeContext(input.TranscriptPath)
-		results <- Result{"context", contextInfo}
 	}()
 
 	go func() {
@@ -226,7 +221,6 @@ func main() {
 	var (
 		gitInfo      GitInfo
 		totalHours   string
-		contextUsage string
 		sessionUsage SessionUsageResult
 		dailyStats   UsageStats
 		weeklyStats  UsageStats
@@ -239,8 +233,6 @@ func main() {
 			gitInfo = result.Data.(GitInfo)
 		case "hours":
 			totalHours = result.Data.(string)
-		case "context":
-			contextUsage = result.Data.(string)
 		case "session_usage":
 			sessionUsage = result.Data.(SessionUsageResult)
 		case "weekly":
@@ -254,28 +246,55 @@ func main() {
 
 	// 更新 session 和統計
 	updateSession(input.SessionID)
-	updateDailyStats(sessionUsage, modelType)
+	updateDailyStats(input.SessionID, sessionUsage, modelType)
 
 	// 格式化輸出
-	modelDisplay := formatModel(input.Model.DisplayName)
-	projectName := filepath.Base(input.Workspace.CurrentDir)
-	gitDisplay := formatGitInfo(gitInfo)
+	modelDisplay := formatModelShort(input.Model.DisplayName)
+	projectPath := formatProjectPath(input.Workspace.CurrentDir)
+	gitDisplay := formatGitInfoCompact(gitInfo)
 
-	// 第一行：基本資訊
-	fmt.Printf("%s[%s] 📂 %s%s%s | %s%s\n",
-		ColorReset, modelDisplay, projectName, gitDisplay,
-		contextUsage, totalHours, ColorReset)
+	// 表格總寬度計算：├─ (3) + Label(9) + │ (3) + Col1(35) + │ (2) + Col2(35) + │(1) = 88
+	const tableWidth = 88
+	const colWidth = 35
 
-	// 第二行：API 用量限制 (Session + Weekly)
-	apiUsageInfo := formatAPIUsage(apiUsage)
-	fmt.Printf("%s│ %s%s\n", ColorDim, apiUsageInfo, ColorReset)
+	// 第一行：路徑 + Git（左）+ 模型（右對齊到表格寬度）
+	leftPart := fmt.Sprintf("📂 %s  %s", projectPath, gitDisplay)
+	modelPart := fmt.Sprintf("[%s]", modelDisplay)
+	// [💛 Opus 4.5] = 約 13 格 (含 emoji 2 寬)
+	leftTargetWidth := tableWidth - 13
+	fmt.Printf("%s%s%s%s\n", ColorReset, padRight(leftPart, leftTargetWidth), modelPart, ColorReset)
 
-	// 第三行：本地統計 (Session tokens/cost + 燒錢速度 + 今日/週成本 + Cache 命中率)
-	sessionInfo := formatSessionUsage(sessionUsage)
-	burnRate := calculateBurnRate(dailyStats)
-	costInfo := formatCostStats(dailyStats, weeklyStats)
-	cacheHitRate := formatCacheHitRate(sessionUsage)
-	fmt.Printf("%s│ %s | %s | %s | %s%s\n", ColorDim, sessionInfo, burnRate, costInfo, cacheHitRate, ColorReset)
+	// 獲取月統計
+	monthlyStats := getMonthlyStats()
+
+	// 第二行：成本（ses, day, mon | week, avg, cache%）
+	sessCost := fmt.Sprintf("ses %s%s%s", ColorGreen, formatCostWide(sessionUsage.Cost), ColorReset)
+	dayCost := fmt.Sprintf("day %s%s%s", ColorGold, formatCostWide(dailyStats.TotalCost), ColorReset)
+	monCost := fmt.Sprintf("mon %s%s%s", ColorPurple, formatCostWide(monthlyStats.TotalCost), ColorReset)
+	wkCost := fmt.Sprintf("week %s%s%s", ColorBlue, formatCostWide(weeklyStats.TotalCost), ColorReset)
+	burnRate := calculateBurnRateWide(dailyStats)
+	cacheStr := formatCachePercent(sessionUsage)
+	costCol1 := sessCost + "  " + dayCost + "  " + monCost
+	costCol2 := wkCost + "  avg " + burnRate + "  " + cacheStr
+	fmt.Printf("%s├─ %-9s │ %s│ %s│%s\n",
+		ColorDim, "Cost", padRight(costCol1, colWidth), padRight(costCol2, colWidth), ColorReset)
+
+	// 第三行：統計 + Context bar（tok, msg, time | Ctx bar）
+	totalTokens := sessionUsage.InputTokens + sessionUsage.OutputTokens + sessionUsage.CacheReadTokens + sessionUsage.CacheWriteTokens
+	tokenStr := fmt.Sprintf("tok %s%s%s", ColorPurple, formatTokenCountFixed(totalTokens), ColorReset)
+	msgStr := fmt.Sprintf("msg %s%4d%s", ColorCyan, sessionUsage.MessageCount, ColorReset)
+	timeStr := fmt.Sprintf("time %s", totalHours)
+	ctxBar := formatContextBarWide(input.TranscriptPath)
+	statsCol1 := tokenStr + "  " + msgStr + "    " + timeStr
+	statsCol2 := ctxBar
+	fmt.Printf("%s├─ %-9s │ %s│ %s│%s\n",
+		ColorDim, "Stats", padRight(statsCol1, colWidth), padRight(statsCol2, colWidth), ColorReset)
+
+	// 第四行：API 限制
+	api5hr := formatAPILimitWide(apiUsage, "5hr")
+	api7day := formatAPILimitWide(apiUsage, "7day")
+	fmt.Printf("%s└─ %-9s │ %s│ %s│%s\n",
+		ColorDim, "API Limit", padRight(api5hr, colWidth), padRight(api7day, colWidth), ColorReset)
 }
 
 // 獲取 OAuth Token (支援 Linux 和 macOS)
@@ -365,27 +384,192 @@ func fetchAPIUsage() *APIUsage {
 	return &usage
 }
 
-// 格式化 API Usage
-func formatAPIUsage(usage *APIUsage) string {
+// 格式化專案路徑（相對於 HOME）
+func formatProjectPath(fullPath string) string {
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return filepath.Base(fullPath)
+	}
+	if strings.HasPrefix(fullPath, homeDir) {
+		return "~" + fullPath[len(homeDir):]
+	}
+	return fullPath
+}
+
+// 格式化單個 API 限制
+func formatAPILimit(usage *APIUsage, limitType string) string {
 	if usage == nil {
-		return fmt.Sprintf("%s⚠️  API usage unavailable%s", ColorDim, ColorReset)
+		return fmt.Sprintf("%s %-10s -- unavailable --", limitType, "")
 	}
 
-	// Session (5-hour) 用量
-	sessionPct := int(usage.FiveHour.Utilization)
-	sessionBar := generateUsageBar(sessionPct, 8)
-	sessionReset := formatResetTime(usage.FiveHour.ResetsAt)
-	sessionColor := getUsageColor(sessionPct)
+	var pct int
+	var resetTime string
+	if limitType == "5hr" {
+		pct = int(usage.FiveHour.Utilization)
+		resetTime = usage.FiveHour.ResetsAt
+	} else {
+		pct = int(usage.SevenDay.Utilization)
+		resetTime = usage.SevenDay.ResetsAt
+	}
 
-	// Weekly (7-day) 用量
-	weeklyPct := int(usage.SevenDay.Utilization)
-	weeklyBar := generateUsageBar(weeklyPct, 8)
-	weeklyReset := formatResetTime(usage.SevenDay.ResetsAt)
-	weeklyColor := getUsageColor(weeklyPct)
+	bar := generateUsageBar(pct, 10)
+	left := formatTimeLeft(resetTime)
+	color := getUsageColor(pct)
 
-	return fmt.Sprintf("⏱️ Session %s %s%d%%%s ↻%s | 📅 Week %s %s%d%%%s ↻%s",
-		sessionBar, sessionColor, sessionPct, ColorReset, sessionReset,
-		weeklyBar, weeklyColor, weeklyPct, ColorReset, weeklyReset)
+	return fmt.Sprintf("%s %s %s%3d%%%s %s", limitType, bar, color, pct, ColorReset, left)
+}
+
+// 格式化單個 API 限制（緊湊版）
+func formatAPILimitCompact(usage *APIUsage, limitType string) string {
+	if usage == nil {
+		return fmt.Sprintf("%s --", limitType)
+	}
+
+	var pct int
+	var resetTime string
+	if limitType == "5hr" {
+		pct = int(usage.FiveHour.Utilization)
+		resetTime = usage.FiveHour.ResetsAt
+	} else {
+		pct = int(usage.SevenDay.Utilization)
+		resetTime = usage.SevenDay.ResetsAt
+	}
+
+	bar := generateUsageBar(pct, 10)
+	left := formatTimeLeftShort(resetTime)
+	color := getUsageColor(pct)
+
+	return fmt.Sprintf("%s %s %s%3d%%%s %s", limitType, bar, color, pct, ColorReset, left)
+}
+
+// 格式化單個 API 限制（最終版：時間用括弧）
+func formatAPILimitFinal(usage *APIUsage, limitType string) string {
+	if usage == nil {
+		return fmt.Sprintf("%s --", limitType)
+	}
+
+	var pct int
+	var resetTime string
+	if limitType == "5hr" {
+		pct = int(usage.FiveHour.Utilization)
+		resetTime = usage.FiveHour.ResetsAt
+	} else {
+		pct = int(usage.SevenDay.Utilization)
+		resetTime = usage.SevenDay.ResetsAt
+	}
+
+	bar := generateUsageBar(pct, 10)
+	timeLeft := formatTimeLeftShort(resetTime)
+	color := getUsageColor(pct)
+
+	// 格式：5hr ██░░░░░░░░  23%   (3h17m)
+	return fmt.Sprintf("%s %s %s%3d%%%s %s(%s)%s", limitType, bar, color, pct, ColorReset, ColorDim, timeLeft, ColorReset)
+}
+
+// 格式化單個 API 限制（寬版）
+func formatAPILimitWide(usage *APIUsage, limitType string) string {
+	if usage == nil {
+		return fmt.Sprintf("%s --", limitType)
+	}
+
+	var pct int
+	var resetTime string
+	if limitType == "5hr" {
+		pct = int(usage.FiveHour.Utilization)
+		resetTime = usage.FiveHour.ResetsAt
+	} else {
+		pct = int(usage.SevenDay.Utilization)
+		resetTime = usage.SevenDay.ResetsAt
+	}
+
+	bar := generateUsageBar(pct, 14)
+	timeLeft := formatTimeLeftShort(resetTime)
+	color := getUsageColor(pct)
+
+	// 格式：5hr ██████░░░░░░░░ 23% (3h17m)
+	return fmt.Sprintf("%s %s %s%3d%%%s (%s)", limitType, bar, color, pct, ColorReset, timeLeft)
+}
+
+// 格式化剩餘時間（更短）
+func formatTimeLeftShort(isoTime string) string {
+	t, err := time.Parse(time.RFC3339, isoTime)
+	if err != nil {
+		return "?"
+	}
+
+	now := time.Now()
+	diff := t.Sub(now)
+
+	if diff <= 0 {
+		return "now"
+	}
+
+	days := int(diff.Hours() / 24)
+	hours := int(diff.Hours()) % 24
+	minutes := int(diff.Minutes()) % 60
+
+	if days > 0 {
+		return fmt.Sprintf("%dd%dh", days, hours)
+	} else if hours > 0 {
+		return fmt.Sprintf("%dh%dm", hours, minutes)
+	}
+	return fmt.Sprintf("%dm", minutes)
+}
+
+// 格式化 Context（簡短版）
+func formatContextShort(transcriptPath string) string {
+	var contextLength int
+	if transcriptPath != "" {
+		contextLength = calculateContextUsage(transcriptPath)
+	}
+
+	percentage := int(float64(contextLength) * 100.0 / 200000.0)
+	if percentage > 100 {
+		percentage = 100
+	}
+
+	color := getContextColor(percentage)
+	num := formatNumberFixed(contextLength)
+
+	return fmt.Sprintf("Ctx %s%3d%%%s %s", color, percentage, ColorReset, num)
+}
+
+// 格式化 Context（含 progress bar）
+func formatContextBar(transcriptPath string) string {
+	var contextLength int
+	if transcriptPath != "" {
+		contextLength = calculateContextUsage(transcriptPath)
+	}
+
+	percentage := int(float64(contextLength) * 100.0 / 200000.0)
+	if percentage > 100 {
+		percentage = 100
+	}
+
+	bar := generateUsageBar(percentage, 10)
+	color := getContextColor(percentage)
+	num := formatNumberFixed(contextLength)
+
+	return fmt.Sprintf("Ctx %s %s%3d%%%s %s", bar, color, percentage, ColorReset, num)
+}
+
+// 格式化 Context（寬版含 progress bar）
+func formatContextBarWide(transcriptPath string) string {
+	var contextLength int
+	if transcriptPath != "" {
+		contextLength = calculateContextUsage(transcriptPath)
+	}
+
+	percentage := int(float64(contextLength) * 100.0 / 200000.0)
+	if percentage > 100 {
+		percentage = 100
+	}
+
+	bar := generateUsageBar(percentage, 14)
+	color := getContextColor(percentage)
+	num := formatNumberFixed(contextLength)
+
+	return fmt.Sprintf("Ctx  %s %s%3d%%%s %s", bar, color, percentage, ColorReset, num)
 }
 
 // 生成用量進度條
@@ -424,30 +608,34 @@ func getUsageColor(percentage int) string {
 	return ColorRed
 }
 
-// 格式化 Reset 時間
-func formatResetTime(isoTime string) string {
+// 格式化剩餘時間
+func formatTimeLeft(isoTime string) string {
 	t, err := time.Parse(time.RFC3339, isoTime)
 	if err != nil {
-		return "?"
+		return fmt.Sprintf("%8s", "?")
 	}
 
-	// 轉換為本地時間
-	local := t.Local()
 	now := time.Now()
+	diff := t.Sub(now)
 
-	// 如果是今天
-	if local.Day() == now.Day() && local.Month() == now.Month() {
-		return local.Format("3:04pm")
+	if diff <= 0 {
+		return fmt.Sprintf("%8s", "now")
 	}
 
-	// 如果是明天
-	tomorrow := now.AddDate(0, 0, 1)
-	if local.Day() == tomorrow.Day() && local.Month() == tomorrow.Month() {
-		return "明天" + local.Format("3:04pm")
+	days := int(diff.Hours() / 24)
+	hours := int(diff.Hours()) % 24
+	minutes := int(diff.Minutes()) % 60
+
+	var result string
+	if days > 0 {
+		result = fmt.Sprintf("%dd%dh", days, hours)
+	} else if hours > 0 {
+		result = fmt.Sprintf("%dh%dm", hours, minutes)
+	} else {
+		result = fmt.Sprintf("%dm", minutes)
 	}
 
-	// 其他日期
-	return local.Format("1/2 3pm")
+	return fmt.Sprintf("%8s", result+" left")
 }
 
 // 獲取模型類型
@@ -470,6 +658,28 @@ func formatModel(model string) string {
 		}
 	}
 	return model
+}
+
+// 格式化模型顯示（簡短版）
+func formatModelShort(model string) string {
+	// 提取簡短名稱
+	shortName := model
+	if strings.Contains(model, "Opus") {
+		shortName = "Opus 4.5"
+	} else if strings.Contains(model, "Sonnet") {
+		shortName = "Sonnet 4"
+	} else if strings.Contains(model, "Haiku") {
+		shortName = "Haiku 3.5"
+	}
+
+	for key, config := range modelConfig {
+		if strings.Contains(model, key) {
+			color := config[0]
+			icon := config[1]
+			return fmt.Sprintf("%s%s %s%s", color, icon, shortName, ColorReset)
+		}
+	}
+	return shortName
 }
 
 // 獲取 Git 資訊（分支名稱 + 狀態）
@@ -546,6 +756,31 @@ func formatGitInfo(info GitInfo) string {
 	return result
 }
 
+// 格式化 Git 資訊（緊湊版：branch + status indicators）
+func formatGitInfoCompact(info GitInfo) string {
+	if info.Branch == "" {
+		return ""
+	}
+
+	// Branch 名稱
+	result := fmt.Sprintf("%s⚡ %s%s", ColorCyan, info.Branch, ColorReset)
+
+	// Git 狀態指示器
+	var indicators []string
+	if info.StagedCount > 0 {
+		indicators = append(indicators, fmt.Sprintf("%s+%d%s", ColorGreen, info.StagedCount, ColorReset))
+	}
+	if info.DirtyCount > 0 {
+		indicators = append(indicators, fmt.Sprintf("%s~%d%s", ColorOrange, info.DirtyCount, ColorReset))
+	}
+
+	if len(indicators) > 0 {
+		result += "  " + strings.Join(indicators, " ")
+	}
+
+	return result
+}
+
 // 更新 Session
 func updateSession(sessionID string) {
 	homeDir, err := os.UserHomeDir()
@@ -566,6 +801,10 @@ func updateSession(sessionID string) {
 
 	if data, err := os.ReadFile(sessionFile); err == nil {
 		json.Unmarshal(data, &session)
+		// 如果 session 跨日，更新日期
+		if session.Date != today {
+			session.Date = today
+		}
 	} else {
 		session = Session{
 			ID:            sessionID,
@@ -604,23 +843,21 @@ func updateSession(sessionID string) {
 	}
 }
 
-// 計算總時數
+// 計算總時數（固定寬度）
 func calculateTotalHours(currentSessionID string) string {
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
-		return "0m"
+		return fmt.Sprintf("%6s", "0m")
 	}
 
 	sessionsDir := filepath.Join(homeDir, ".claude", "session-tracker", "sessions")
 	entries, err := os.ReadDir(sessionsDir)
 	if err != nil {
-		return "0m"
+		return fmt.Sprintf("%6s", "0m")
 	}
 
 	var totalSeconds int64
-	activeSessions := 0
 	today := time.Now().Format("2006-01-02")
-	currentTime := time.Now().Unix()
 
 	for _, entry := range entries {
 		if !strings.HasSuffix(entry.Name(), ".json") {
@@ -640,10 +877,6 @@ func calculateTotalHours(currentSessionID string) string {
 
 		if session.Date == today {
 			totalSeconds += session.TotalSeconds
-
-			if currentTime-session.LastHeartbeat < 600 {
-				activeSessions++
-			}
 		}
 	}
 
@@ -652,17 +885,11 @@ func calculateTotalHours(currentSessionID string) string {
 
 	var timeStr string
 	if hours > 0 {
-		timeStr = fmt.Sprintf("%dh", hours)
-		if minutes > 0 {
-			timeStr += fmt.Sprintf("%dm", minutes)
-		}
+		timeStr = fmt.Sprintf("%dh%02dm", hours, minutes)
 	} else {
 		timeStr = fmt.Sprintf("%dm", minutes)
 	}
 
-	if activeSessions > 1 {
-		return fmt.Sprintf("%s [%d sessions]", timeStr, activeSessions)
-	}
 	return timeStr
 }
 
@@ -769,31 +996,16 @@ func calculateCost(usage SessionUsageResult, modelType string) float64 {
 	return cost
 }
 
-// 格式化 Session 用量
+// 格式化 Session 用量（固定寬度）
 func formatSessionUsage(usage SessionUsageResult) string {
 	totalTokens := usage.InputTokens + usage.OutputTokens + usage.CacheReadTokens + usage.CacheWriteTokens
 
-	tokenStr := formatTokenCount(totalTokens)
-	costStr := formatCost(usage.Cost)
+	tokenStr := formatTokenCountFixed(totalTokens)
+	msgStr := fmt.Sprintf("%4d", usage.MessageCount)
 
-	durationStr := ""
-	if usage.Duration > 0 {
-		if usage.Duration.Hours() >= 1 {
-			durationStr = fmt.Sprintf(" ⏱️%dh%dm", int(usage.Duration.Hours()), int(usage.Duration.Minutes())%60)
-		} else {
-			durationStr = fmt.Sprintf(" ⏱️%dm", int(usage.Duration.Minutes()))
-		}
-	}
-
-	msgStr := ""
-	if usage.MessageCount > 0 {
-		msgStr = fmt.Sprintf(" 💬%d", usage.MessageCount)
-	}
-
-	return fmt.Sprintf("%s🔤%s%s %s💰%s%s%s%s",
+	return fmt.Sprintf("%s%s%s tok  %s%s%s msg",
 		ColorPurple, tokenStr, ColorReset,
-		ColorGreen, costStr, ColorReset,
-		durationStr, msgStr)
+		ColorCyan, msgStr, ColorReset)
 }
 
 // 格式化 Token 數量
@@ -806,6 +1018,16 @@ func formatTokenCount(tokens int64) string {
 	return fmt.Sprintf("%d", tokens)
 }
 
+// 格式化 Token 數量（固定寬度 6 字元）
+func formatTokenCountFixed(tokens int64) string {
+	if tokens >= 1000000 {
+		return fmt.Sprintf("%5.1fM", float64(tokens)/1000000)
+	} else if tokens >= 1000 {
+		return fmt.Sprintf("%5.1fk", float64(tokens)/1000)
+	}
+	return fmt.Sprintf("%6d", tokens)
+}
+
 // 格式化成本
 func formatCost(cost float64) string {
 	if cost >= 1.0 {
@@ -814,6 +1036,48 @@ func formatCost(cost float64) string {
 		return fmt.Sprintf("$%.3f", cost)
 	}
 	return fmt.Sprintf("$%.4f", cost)
+}
+
+// 格式化成本（固定寬度 7 字元）
+func formatCostFixed(cost float64) string {
+	if cost >= 1000 {
+		return fmt.Sprintf("$%5.0f", cost)
+	} else if cost >= 100 {
+		return fmt.Sprintf("$%5.1f", cost)
+	} else if cost >= 10 {
+		return fmt.Sprintf("$%5.2f", cost)
+	} else if cost >= 1.0 {
+		return fmt.Sprintf("$%5.2f", cost)
+	}
+	return fmt.Sprintf("$%5.3f", cost)
+}
+
+// 格式化成本（短版 5 字元）
+func formatCostShort(cost float64) string {
+	if cost >= 1000 {
+		return fmt.Sprintf("$%.0f", cost)
+	} else if cost >= 100 {
+		return fmt.Sprintf("$%.0f", cost)
+	} else if cost >= 10 {
+		return fmt.Sprintf("$%.1f", cost)
+	} else if cost >= 1.0 {
+		return fmt.Sprintf("$%.2f", cost)
+	}
+	return fmt.Sprintf("$%.2f", cost)
+}
+
+// 格式化成本（寬版 至少4位數字空間）
+func formatCostWide(cost float64) string {
+	if cost >= 1000 {
+		return fmt.Sprintf("$%.0f", cost)
+	} else if cost >= 100 {
+		return fmt.Sprintf("$%.0f", cost)
+	} else if cost >= 10 {
+		return fmt.Sprintf("$%.1f", cost)
+	} else if cost >= 1.0 {
+		return fmt.Sprintf("$%.2f", cost)
+	}
+	return fmt.Sprintf("$%.2f", cost)
 }
 
 // 獲取每日統計
@@ -856,8 +1120,25 @@ func getWeeklyStats() UsageStats {
 	return stats
 }
 
+// 獲取月統計
+func getMonthlyStats() UsageStats {
+	homeDir, _ := os.UserHomeDir()
+	statsDir := filepath.Join(homeDir, ".claude", "session-tracker", "stats")
+
+	// 當月格式：2006-01
+	monthKey := time.Now().Format("2006-01")
+	statsFile := filepath.Join(statsDir, "monthly-"+monthKey+".json")
+
+	var stats UsageStats
+	if data, err := os.ReadFile(statsFile); err == nil {
+		json.Unmarshal(data, &stats)
+	}
+
+	return stats
+}
+
 // 更新每日統計
-func updateDailyStats(sessionUsage SessionUsageResult, modelType string) {
+func updateDailyStats(sessionID string, sessionUsage SessionUsageResult, modelType string) {
 	homeDir, _ := os.UserHomeDir()
 	statsDir := filepath.Join(homeDir, ".claude", "session-tracker", "stats")
 	os.MkdirAll(statsDir, 0755)
@@ -871,9 +1152,20 @@ func updateDailyStats(sessionUsage SessionUsageResult, modelType string) {
 		json.Unmarshal(data, &dailyStats)
 	}
 
-	// 更新統計
+	// 初始化 SessionCosts map
+	if dailyStats.SessionCosts == nil {
+		dailyStats.SessionCosts = make(map[string]float64)
+	}
+
+	// 計算差額：只加上新增的成本
+	lastKnownCost := dailyStats.SessionCosts[sessionID]
+	delta := sessionUsage.Cost - lastKnownCost
+	if delta > 0 {
+		dailyStats.TotalCost += delta
+		dailyStats.SessionCosts[sessionID] = sessionUsage.Cost
+	}
+
 	dailyStats.Date = today
-	dailyStats.TotalCost += sessionUsage.Cost * 0.01
 	dailyStats.LastUpdated = time.Now().Unix()
 
 	// 儲存
@@ -881,12 +1173,13 @@ func updateDailyStats(sessionUsage SessionUsageResult, modelType string) {
 		os.WriteFile(dailyFile, data, 0644)
 	}
 
-	// 同時更新每週統計
-	updateWeeklyStats(sessionUsage, modelType)
+	// 同時更新每週和每月統計
+	updateWeeklyStats(sessionID, sessionUsage, modelType)
+	updateMonthlyStats(sessionID, sessionUsage, modelType)
 }
 
 // 更新每週統計
-func updateWeeklyStats(sessionUsage SessionUsageResult, modelType string) {
+func updateWeeklyStats(sessionID string, sessionUsage SessionUsageResult, modelType string) {
 	homeDir, _ := os.UserHomeDir()
 	statsDir := filepath.Join(homeDir, ".claude", "session-tracker", "stats")
 
@@ -904,8 +1197,20 @@ func updateWeeklyStats(sessionUsage SessionUsageResult, modelType string) {
 		json.Unmarshal(data, &weeklyStats)
 	}
 
+	// 初始化 SessionCosts map
+	if weeklyStats.SessionCosts == nil {
+		weeklyStats.SessionCosts = make(map[string]float64)
+	}
+
+	// 計算差額：只加上新增的成本
+	lastKnownCost := weeklyStats.SessionCosts[sessionID]
+	delta := sessionUsage.Cost - lastKnownCost
+	if delta > 0 {
+		weeklyStats.TotalCost += delta
+		weeklyStats.SessionCosts[sessionID] = sessionUsage.Cost
+	}
+
 	weeklyStats.Week = weekStart
-	weeklyStats.TotalCost += sessionUsage.Cost * 0.01
 	weeklyStats.LastUpdated = time.Now().Unix()
 
 	if data, err := json.Marshal(weeklyStats); err == nil {
@@ -913,7 +1218,40 @@ func updateWeeklyStats(sessionUsage SessionUsageResult, modelType string) {
 	}
 }
 
-// 計算燒錢速度
+// 更新每月統計
+func updateMonthlyStats(sessionID string, sessionUsage SessionUsageResult, modelType string) {
+	homeDir, _ := os.UserHomeDir()
+	statsDir := filepath.Join(homeDir, ".claude", "session-tracker", "stats")
+
+	monthKey := time.Now().Format("2006-01")
+	monthlyFile := filepath.Join(statsDir, "monthly-"+monthKey+".json")
+
+	var monthlyStats UsageStats
+	if data, err := os.ReadFile(monthlyFile); err == nil {
+		json.Unmarshal(data, &monthlyStats)
+	}
+
+	// 初始化 SessionCosts map
+	if monthlyStats.SessionCosts == nil {
+		monthlyStats.SessionCosts = make(map[string]float64)
+	}
+
+	// 計算差額：只加上新增的成本
+	lastKnownCost := monthlyStats.SessionCosts[sessionID]
+	delta := sessionUsage.Cost - lastKnownCost
+	if delta > 0 {
+		monthlyStats.TotalCost += delta
+		monthlyStats.SessionCosts[sessionID] = sessionUsage.Cost
+	}
+
+	monthlyStats.LastUpdated = time.Now().Unix()
+
+	if data, err := json.Marshal(monthlyStats); err == nil {
+		os.WriteFile(monthlyFile, data, 0644)
+	}
+}
+
+// 計算燒錢速度（固定寬度）
 func calculateBurnRate(dailyStats UsageStats) string {
 	homeDir, _ := os.UserHomeDir()
 	sessionsDir := filepath.Join(homeDir, ".claude", "session-tracker", "sessions")
@@ -936,28 +1274,106 @@ func calculateBurnRate(dailyStats UsageStats) string {
 		}
 	}
 
-	if totalSeconds < 60 {
-		return fmt.Sprintf("%s🔥--/hr%s", ColorRed, ColorReset)
+	if totalSeconds < 300 { // 至少 5 分鐘才計算
+		return fmt.Sprintf("%s--/hr%s", ColorDim, ColorReset)
 	}
 
 	hours := float64(totalSeconds) / 3600
 	rate := dailyStats.TotalCost / hours
 
-	return fmt.Sprintf("%s🔥$%.2f/hr%s", ColorRed, rate, ColorReset)
+	// 固定寬度格式化
+	if rate >= 100 {
+		return fmt.Sprintf("%s$%.0f/hr%s", ColorRed, rate, ColorReset)
+	}
+	return fmt.Sprintf("%s$%.1f/hr%s", ColorRed, rate, ColorReset)
 }
 
-// 格式化今日/週成本
+// 計算燒錢速度（短版）
+func calculateBurnRateShort(dailyStats UsageStats) string {
+	homeDir, _ := os.UserHomeDir()
+	sessionsDir := filepath.Join(homeDir, ".claude", "session-tracker", "sessions")
+	entries, _ := os.ReadDir(sessionsDir)
+
+	var totalSeconds int64
+	today := time.Now().Format("2006-01-02")
+
+	for _, entry := range entries {
+		if !strings.HasSuffix(entry.Name(), ".json") {
+			continue
+		}
+
+		sessionFile := filepath.Join(sessionsDir, entry.Name())
+		data, _ := os.ReadFile(sessionFile)
+
+		var session Session
+		if err := json.Unmarshal(data, &session); err == nil && session.Date == today {
+			totalSeconds += session.TotalSeconds
+		}
+	}
+
+	if totalSeconds < 300 {
+		return fmt.Sprintf("%s--/h%s", ColorDim, ColorReset)
+	}
+
+	hours := float64(totalSeconds) / 3600
+	rate := dailyStats.TotalCost / hours
+
+	if rate >= 100 {
+		return fmt.Sprintf("%s$%.0f/h%s", ColorRed, rate, ColorReset)
+	}
+	return fmt.Sprintf("%s$%.0f/h%s", ColorRed, rate, ColorReset)
+}
+
+// 計算燒錢速度（寬版）
+func calculateBurnRateWide(dailyStats UsageStats) string {
+	homeDir, _ := os.UserHomeDir()
+	sessionsDir := filepath.Join(homeDir, ".claude", "session-tracker", "sessions")
+	entries, _ := os.ReadDir(sessionsDir)
+
+	var totalSeconds int64
+	today := time.Now().Format("2006-01-02")
+
+	for _, entry := range entries {
+		if !strings.HasSuffix(entry.Name(), ".json") {
+			continue
+		}
+
+		sessionFile := filepath.Join(sessionsDir, entry.Name())
+		data, _ := os.ReadFile(sessionFile)
+
+		var session Session
+		if err := json.Unmarshal(data, &session); err == nil && session.Date == today {
+			totalSeconds += session.TotalSeconds
+		}
+	}
+
+	if totalSeconds < 300 {
+		return fmt.Sprintf("%s--/h%s", ColorDim, ColorReset)
+	}
+
+	hours := float64(totalSeconds) / 3600
+	rate := dailyStats.TotalCost / hours
+
+	if rate >= 100 {
+		return fmt.Sprintf("%s$%3.0f/h%s", ColorRed, rate, ColorReset)
+	}
+	return fmt.Sprintf("%s$%3.0f/h%s", ColorRed, rate, ColorReset)
+}
+
+// 格式化今日/週成本（固定寬度）
 func formatCostStats(daily, weekly UsageStats) string {
-	dailyCostStr := formatCost(daily.TotalCost)
-	weeklyCostStr := formatCost(weekly.TotalCost)
-	return fmt.Sprintf("%s📆%s%s/%s💵%s%s", ColorGold, dailyCostStr, ColorReset, ColorBlue, weeklyCostStr, ColorReset)
+	dailyCostStr := formatCostFixed(daily.TotalCost)
+	weeklyCostStr := formatCostFixed(weekly.TotalCost)
+	return fmt.Sprintf("%s%s%s/day %s%s%s/wk",
+		ColorGold, dailyCostStr, ColorReset,
+		ColorBlue, weeklyCostStr, ColorReset)
 }
 
-// 格式化 Cache 命中率
+// 格式化 Cache 命中率（固定寬度）
 func formatCacheHitRate(usage SessionUsageResult) string {
 	totalInput := usage.InputTokens + usage.CacheReadTokens
 	if totalInput == 0 {
-		return fmt.Sprintf("%s📦--%s", ColorDim, ColorReset)
+		return fmt.Sprintf("%s%3s%% cache%s", ColorDim, "--", ColorReset)
 	}
 
 	hitRate := float64(usage.CacheReadTokens) * 100.0 / float64(totalInput)
@@ -972,10 +1388,52 @@ func formatCacheHitRate(usage SessionUsageResult) string {
 		color = ColorOrange
 	}
 
-	return fmt.Sprintf("%s📦%.0f%%%s", color, hitRate, ColorReset)
+	return fmt.Sprintf("%s%3.0f%% cache%s", color, hitRate, ColorReset)
 }
 
-// 分析 Context 使用量
+// 格式化 Cache 命中率（短版）
+func formatCacheHitRateShort(usage SessionUsageResult) string {
+	totalInput := usage.InputTokens + usage.CacheReadTokens
+	if totalInput == 0 {
+		return fmt.Sprintf("%s--%%🗄️%s", ColorDim, ColorReset)
+	}
+
+	hitRate := float64(usage.CacheReadTokens) * 100.0 / float64(totalInput)
+
+	var color string
+	if hitRate >= 70 {
+		color = ColorGreen
+	} else if hitRate >= 40 {
+		color = ColorYellow
+	} else {
+		color = ColorOrange
+	}
+
+	return fmt.Sprintf("%s%.0f%%🗄️%s", color, hitRate, ColorReset)
+}
+
+// 格式化 Cache 百分比（無 emoji）
+func formatCachePercent(usage SessionUsageResult) string {
+	totalInput := usage.InputTokens + usage.CacheReadTokens
+	if totalInput == 0 {
+		return fmt.Sprintf("%shit --%% %s", ColorDim, ColorReset)
+	}
+
+	hitRate := float64(usage.CacheReadTokens) * 100.0 / float64(totalInput)
+
+	var color string
+	if hitRate >= 70 {
+		color = ColorGreen
+	} else if hitRate >= 40 {
+		color = ColorYellow
+	} else {
+		color = ColorOrange
+	}
+
+	return fmt.Sprintf("hit %s%3.0f%%%s", color, hitRate, ColorReset)
+}
+
+// 分析 Context 使用量（固定寬度）
 func analyzeContext(transcriptPath string) string {
 	var contextLength int
 
@@ -990,12 +1448,11 @@ func analyzeContext(transcriptPath string) string {
 		percentage = 100
 	}
 
-	progressBar := generateProgressBar(percentage)
-	formattedNum := formatNumber(contextLength)
+	bar := generateProgressBar(percentage)
+	num := formatNumberFixed(contextLength)
 	color := getContextColor(percentage)
 
-	return fmt.Sprintf(" | %s %s%d%% %s%s",
-		progressBar, color, percentage, formattedNum, ColorReset)
+	return fmt.Sprintf(" %s %s%3d%%%s %s", bar, color, percentage, ColorReset, num)
 }
 
 // 計算 Context 使用量
@@ -1116,4 +1573,100 @@ func formatNumber(num int) string {
 		return fmt.Sprintf("%dk", num/1000)
 	}
 	return strconv.Itoa(num)
+}
+
+// 格式化數字（固定寬度 4 字元）
+func formatNumberFixed(num int) string {
+	if num == 0 {
+		return fmt.Sprintf("%4s", "--")
+	}
+
+	if num >= 1000000 {
+		return fmt.Sprintf("%3dM", num/1000000)
+	} else if num >= 1000 {
+		return fmt.Sprintf("%3dk", num/1000)
+	}
+	return fmt.Sprintf("%4d", num)
+}
+
+// 計算字串的可見寬度（排除 ANSI 碼，emoji 算 2 寬）
+func visibleWidth(s string) int {
+	// 移除 ANSI escape codes
+	clean := s
+	for {
+		start := strings.Index(clean, "\033[")
+		if start == -1 {
+			break
+		}
+		end := strings.Index(clean[start:], "m")
+		if end == -1 {
+			break
+		}
+		clean = clean[:start] + clean[start+end+1:]
+	}
+
+	// 計算顯示寬度（emoji 和特殊符號算 2 寬）
+	width := 0
+	for _, r := range clean {
+		w := runeWidth(r)
+		width += w
+	}
+	return width
+}
+
+// 計算單個 rune 的顯示寬度
+func runeWidth(r rune) int {
+	// Variation selectors - zero width
+	if r >= 0xFE00 && r <= 0xFE0F {
+		return 0
+	}
+	// Zero-width characters
+	if r == 0x200B || r == 0x200C || r == 0x200D || r == 0xFEFF {
+		return 0
+	}
+	// Combining characters - zero width
+	if r >= 0x0300 && r <= 0x036F {
+		return 0
+	}
+
+	// Wide characters (2 cells)
+	if r >= 0x1F300 && r <= 0x1FAFF { // Extended emoji ranges
+		return 2
+	}
+	if r >= 0x2300 && r <= 0x23FF { // Miscellaneous Technical (⏱️ U+23F1 etc.)
+		return 2
+	}
+	if r >= 0x2600 && r <= 0x26FF { // Miscellaneous Symbols (⚡ etc.)
+		return 2
+	}
+	if r >= 0x2700 && r <= 0x27BF { // Dingbats
+		return 2
+	}
+	if r >= 0x2B50 && r <= 0x2B55 { // Stars and circles
+		return 2
+	}
+	// CJK characters
+	if r >= 0x4E00 && r <= 0x9FFF { // CJK Unified Ideographs
+		return 2
+	}
+	if r >= 0x3000 && r <= 0x303F { // CJK Symbols and Punctuation
+		return 2
+	}
+	// Full-width characters
+	if r >= 0xFF00 && r <= 0xFFEF {
+		return 2
+	}
+
+	// Default: single width
+	return 1
+}
+
+
+// 右填充至指定可見寬度
+func padRight(s string, width int) string {
+	visible := visibleWidth(s)
+	if visible >= width {
+		return s
+	}
+	return s + strings.Repeat(" ", width-visible)
 }
