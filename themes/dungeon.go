@@ -174,21 +174,41 @@ func dunDisplayWidth(s string) int {
 
 // isWideChar checks if a rune is a wide character (emoji or CJK)
 func isWideChar(r rune) bool {
-	// Emojis and symbols that are typically 2 cells wide
-	if r >= 0x1F300 && r <= 0x1F9FF { // Misc Symbols, Emoticons, etc.
-		return true
-	}
-	if r >= 0x2600 && r <= 0x26FF { // Misc Symbols (⚔, ⚗, ⌛, etc.)
-		return true
-	}
-	if r >= 0x2700 && r <= 0x27BF { // Dingbats
-		return true
-	}
-	if r >= 0x25A0 && r <= 0x25FF { // Geometric shapes (▓, ▰, ▱)
-		return true
-	}
-	if r >= 0x2500 && r <= 0x257F { // Box Drawing (║, ═, ╔, ╗, etc.) - actually 1 width
+	// Box Drawing characters are 1 width (check first)
+	if r >= 0x2500 && r <= 0x257F {
 		return false
+	}
+	// Block elements (▓▒░█) are 1 width
+	if r >= 0x2580 && r <= 0x259F {
+		return false
+	}
+	// Geometric shapes - most are 1 width
+	if r >= 0x25A0 && r <= 0x25FF {
+		return false
+	}
+	// Special 1-width characters
+	switch r {
+	case '▓', '▰', '▱', '҈', '★', '✦':
+		return false
+	}
+	// CJK brackets - these ARE wide (2 cells)
+	if r >= 0x3000 && r <= 0x303F {
+		return true
+	}
+	// CJK punctuation brackets
+	switch r {
+	case '〔', '〕', '「', '」', '『', '』':
+		return true
+	}
+	// Emojis
+	if r >= 0x1F300 && r <= 0x1F9FF {
+		return true
+	}
+	if r >= 0x2600 && r <= 0x26FF {
+		return true
+	}
+	if r >= 0x2700 && r <= 0x27BF {
+		return true
 	}
 	// CJK characters
 	if unicode.Is(unicode.Han, r) {
@@ -198,12 +218,10 @@ func isWideChar(r rune) bool {
 	if r >= 0xFF00 && r <= 0xFFEF {
 		return true
 	}
-	// Special dungeon characters
+	// Specific emojis
 	switch r {
-	case '▓', '▰', '▱', '҈':
-		return false // These are 1 cell in most terminals
-	case '★', '❤', '✦', '⚡', '💰', '💎', '💀', '🗡', '🛡', '⏳', '⚗', '⌛', '⚔', '📜':
-		return true // Emojis are 2 cells
+	case '❤', '⚡', '💰', '💎', '💀', '🗡', '🛡', '⏳', '⚗', '⌛', '⚔', '📜', '💛', '💙', '💚':
+		return true
 	}
 	return false
 }
@@ -219,7 +237,7 @@ func (t *DungeonTheme) generateDungeonBar(percent, width int, color string) stri
 	empty := width - filled
 
 	var bar strings.Builder
-	bar.WriteString(DunShadow + "〔" + Reset)
+	bar.WriteString(DunShadow + "[" + Reset)
 	if filled > 0 {
 		bar.WriteString(color)
 		bar.WriteString(strings.Repeat("▰", filled))
@@ -230,6 +248,6 @@ func (t *DungeonTheme) generateDungeonBar(percent, width int, color string) stri
 		bar.WriteString(strings.Repeat("▱", empty))
 		bar.WriteString(Reset)
 	}
-	bar.WriteString(DunShadow + "〕" + Reset)
+	bar.WriteString(DunShadow + "]" + Reset)
 	return bar.String()
 }
