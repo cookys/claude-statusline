@@ -38,8 +38,8 @@ func (t *NetHackTheme) Render(data StatusData) string {
 	var sb strings.Builder
 	width := 80
 
-	// Dungeon map style header with walls
-	sb.WriteString(NHDark + "-----+" + strings.Repeat("-", width-12) + "+-----" + Reset + "\n")
+	// Dungeon map style header with box-drawing walls
+	sb.WriteString(NHDark + "─────┬" + strings.Repeat("─", width-12) + "┬─────" + Reset + "\n")
 
 	// Player @ symbol with class
 	modelColor, _ := GetModelConfig(data.ModelType)
@@ -56,7 +56,7 @@ func (t *NetHackTheme) Render(data StatusData) string {
 		update = NHYellow + " (Dlvl^)" + Reset
 	}
 
-	line1 := fmt.Sprintf("%s|%s %s%s@%s %sthe %s%s %s%s%s%s  St:%s18%s Dx:%s%d%s Co:%s%d%s",
+	line1 := fmt.Sprintf("%s│%s %s%s@%s %sthe %s%s %s%s%s%s  St:%s18%s Dx:%s%d%s Co:%s%d%s",
 		NHDark, Reset,
 		modelColor, Bold, Reset,
 		NHWhite, className, Reset,
@@ -64,7 +64,7 @@ func (t *NetHackTheme) Render(data StatusData) string {
 		NHGreen, Reset,
 		NHCyan, data.MessageCount, Reset,
 		NHYellow, data.CacheHitRate, Reset)
-	sb.WriteString(nhPadLine(line1, width, NHDark+"|"+Reset))
+	sb.WriteString(nhPadLine(line1, width, NHDark+"│"+Reset))
 
 	// Dungeon level (project path)
 	gitStr := ""
@@ -78,15 +78,15 @@ func (t *NetHackTheme) Render(data StatusData) string {
 		}
 	}
 
-	line2 := fmt.Sprintf("%s|%s %sDlvl:%s%s%s%s  %s$:%s%s  %sT:%s%s",
+	line2 := fmt.Sprintf("%s│%s %sDlvl:%s%s%s%s  %s$:%s%s  %sT:%s%s",
 		NHDark, Reset,
 		NHWhite, NHBrown, ShortenPath(data.ProjectPath, 25), Reset, gitStr,
 		NHYellow, FormatCostShort(data.DayCost), Reset,
 		NHGray, data.SessionTime, Reset)
-	sb.WriteString(nhPadLine(line2, width, NHDark+"|"+Reset))
+	sb.WriteString(nhPadLine(line2, width, NHDark+"│"+Reset))
 
 	// Separator (dungeon floor)
-	sb.WriteString(NHDark + "-----+" + strings.Repeat("-", width-12) + "+-----" + Reset + "\n")
+	sb.WriteString(NHDark + "─────┼" + strings.Repeat("─", width-12) + "┼─────" + Reset + "\n")
 
 	// Status bars (HP/Pw/AC style)
 	hp := 100 - data.ContextPercent
@@ -102,18 +102,18 @@ func (t *NetHackTheme) Render(data StatusData) string {
 		hpColor = NHYellow
 	}
 
-	// HP and Pw bars
-	hpBar := t.generateNHBar(hp, 12)
-	pwBar := t.generateNHBar(pw, 10)
-	acBar := t.generateNHBar(ac, 10)
+	// HP and Pw bars - use shorter bars to fit
+	hpBar := t.generateNHBar(hp, 8)
+	pwBar := t.generateNHBar(pw, 7)
+	acBar := t.generateNHBar(ac, 7)
 
-	line3 := fmt.Sprintf("%s|%s %sHP:%s%s%s%d%s(%s%d%s) %sPw:%s%s%s%d%s(%s%d%s) %sAC:%s%s%s%d%s %sXp:%s%s%s",
+	line3 := fmt.Sprintf("%s│%s %sHP:%s%s%s%d%s(%s%d%s) %sPw:%s%s%s%d%s(%s%d%s) %sAC:%s%s%s%d%s %sXp:%s%s%s",
 		NHDark, Reset,
 		NHWhite, hpColor, hpBar, hpColor, hp, NHDark, NHGray, hpMax, Reset,
 		NHWhite, NHBlue, pwBar, NHBlue, pw, NHDark, NHGray, pwMax, Reset,
 		NHWhite, NHCyan, acBar, NHCyan, ac, Reset,
 		NHWhite, NHMagenta, FormatTokens(data.TokenCount), Reset)
-	sb.WriteString(nhPadLine(line3, width, NHDark+"|"+Reset))
+	sb.WriteString(nhPadLine(line3, width, NHDark+"│"+Reset))
 
 	// Bottom status (Hunger/Encumbrance style)
 	hungerStatus := "Satiated"
@@ -123,24 +123,24 @@ func (t *NetHackTheme) Render(data StatusData) string {
 		hungerStatus = "Hungry"
 	}
 
-	line4 := fmt.Sprintf("%s|%s %s%s%s  %sBurdened%s  %s%s%s ses  %s%s/h%s rate  %s%s%s left",
+	line4 := fmt.Sprintf("%s│%s %s%s%s  %sBurdened%s  %s%s%s ses  %s%s/h%s rate  %s%s%s left",
 		NHDark, Reset,
 		NHOrange, hungerStatus, Reset,
 		NHYellow, Reset,
 		NHGreen, FormatCostShort(data.SessionCost), Reset,
 		NHRed, FormatCostShort(data.BurnRate), Reset,
 		NHGray, data.API5hrTimeLeft, Reset)
-	sb.WriteString(nhPadLine(line4, width, NHDark+"|"+Reset))
+	sb.WriteString(nhPadLine(line4, width, NHDark+"│"+Reset))
 
 	// Bottom wall
-	sb.WriteString(NHDark + "-----+" + strings.Repeat("-", width-12) + "+-----" + Reset + "\n")
+	sb.WriteString(NHDark + "─────┴" + strings.Repeat("─", width-12) + "┴─────" + Reset + "\n")
 
 	return sb.String()
 }
 
 func nhPadLine(line string, targetWidth int, suffix string) string {
-	visible := nhVisibleLen(line)
-	suffixLen := nhVisibleLen(suffix)
+	visible := nhDisplayWidth(line)
+	suffixLen := nhDisplayWidth(suffix)
 	padding := targetWidth - visible - suffixLen
 	if padding < 0 {
 		padding = 0
@@ -148,9 +148,10 @@ func nhPadLine(line string, targetWidth int, suffix string) string {
 	return line + strings.Repeat(" ", padding) + suffix + "\n"
 }
 
-func nhVisibleLen(s string) int {
+// nhDisplayWidth calculates display width accounting for ANSI codes
+func nhDisplayWidth(s string) int {
 	inEscape := false
-	count := 0
+	width := 0
 	for _, r := range s {
 		if r == '\033' {
 			inEscape = true
@@ -159,10 +160,11 @@ func nhVisibleLen(s string) int {
 				inEscape = false
 			}
 		} else {
-			count++
+			// Box drawing and block characters are 1 cell wide
+			width += 1
 		}
 	}
-	return count
+	return width
 }
 
 func (t *NetHackTheme) generateNHBar(percent, width int) string {
