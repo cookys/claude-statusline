@@ -185,6 +185,18 @@ func FormatNumber(num int) string {
 	return fmt.Sprintf("%d", num)
 }
 
+// ShortenPath 縮短路徑
+func ShortenPath(path string, maxLen int) string {
+	if len(path) <= maxLen {
+		return path
+	}
+	parts := strings.Split(path, "/")
+	if len(parts) > 2 {
+		return "~/" + parts[len(parts)-1]
+	}
+	return path
+}
+
 // GenerateBar 生成進度條
 func GenerateBar(percent, width int, filledChar, emptyChar string, filledColor, emptyColor string) string {
 	filled := percent * width / 100

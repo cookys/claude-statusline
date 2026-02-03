@@ -62,7 +62,7 @@ func (t *HUDTheme) formatLine1(data StatusData) string {
 	// ⟨~/proj⟩
 	path := fmt.Sprintf(" %s⟨%s%s%s%s⟩%s",
 		HUDCyan,
-		ColorYellow, shortenPath(data.ProjectPath), Reset,
+		ColorYellow, ShortenPath(data.ProjectPath, 20), Reset,
 		HUDCyan, Reset)
 
 	// ⟨⚡main+3~5⟩

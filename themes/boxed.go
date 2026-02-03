@@ -25,8 +25,29 @@ func (t *BoxedTheme) Render(data StatusData) string {
 
 	const leftWidth = 49
 	const rightWidth = 43
+	const fullWidth = leftWidth + rightWidth + 1
 
 	// 頂部框線
+	sb.WriteString(ColorFrame)
+	sb.WriteString(" ┌")
+	sb.WriteString(strings.Repeat("─", fullWidth))
+	sb.WriteString("┐")
+	sb.WriteString(Reset)
+	sb.WriteString("\n")
+
+	// 標題行：路徑 + Git + 模型
+	headerContent := t.formatHeader(data)
+	sb.WriteString(ColorFrame)
+	sb.WriteString(" │")
+	sb.WriteString(Reset)
+	sb.WriteString(" ")
+	sb.WriteString(PadRight(headerContent, fullWidth-1))
+	sb.WriteString(ColorFrame)
+	sb.WriteString("│")
+	sb.WriteString(Reset)
+	sb.WriteString("\n")
+
+	// 分隔線
 	sb.WriteString(ColorFrame)
 	sb.WriteString(" ├")
 	sb.WriteString(strings.Repeat("─", leftWidth))

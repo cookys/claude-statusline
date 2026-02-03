@@ -17,22 +17,18 @@ func (t *CyberpunkTheme) Name() string {
 }
 
 func (t *CyberpunkTheme) Description() string {
-	return "賽博朋克霓虹：青色/洋紅雙色框線，霓虹發光效果"
+	return "賽博朋克：霓虹雙色框線"
 }
 
 const (
 	CyberCyan    = "\033[38;2;0;255;255m"
 	CyberMagenta = "\033[38;2;255;0;255m"
-	CyberPink    = "\033[38;2;255;100;255m"
-	CyberGreen   = "\033[38;2;0;255;136m"
-	CyberYellow  = "\033[38;2;255;255;0m"
-	CyberOrange  = "\033[38;2;255;150;0m"
 )
 
 func (t *CyberpunkTheme) Render(data StatusData) string {
 	var sb strings.Builder
 
-	const width = 90
+	const width = 95
 
 	// 頂部框線
 	sb.WriteString(CyberCyan)
@@ -42,87 +38,97 @@ func (t *CyberpunkTheme) Render(data StatusData) string {
 	sb.WriteString(Reset)
 	sb.WriteString("\n")
 
-	// 標題行：CLAUDE CODE + 版本 + 模型
-	titleLine := t.formatTitleLine(data, width)
+	// 第一行：模型 + 版本 | 路徑 + Git
+	modelColor, modelIcon := GetModelConfig(data.ModelType)
+	update := ""
+	if data.UpdateAvailable {
+		update = fmt.Sprintf(" %s⬆%s", ColorNeonOrange, Reset)
+	}
+
+	line1 := fmt.Sprintf(" %s%s%s%s%s %s%s%s%s  %s│%s  %s📂 %s%s",
+		modelColor, Bold, modelIcon, data.ModelName, Reset,
+		ColorNeonGreen, data.Version, Reset, update,
+		ColorDim, Reset,
+		ColorYellow, data.ProjectPath, Reset)
+	if data.GitBranch != "" {
+		line1 += fmt.Sprintf("  %s⚡%s%s", CyberCyan, data.GitBranch, Reset)
+		if data.GitStaged > 0 {
+			line1 += fmt.Sprintf(" %s+%d%s", ColorGreen, data.GitStaged, Reset)
+		}
+		if data.GitDirty > 0 {
+			line1 += fmt.Sprintf(" %s~%d%s", ColorOrange, data.GitDirty, Reset)
+		}
+	}
+
 	sb.WriteString(CyberCyan)
 	sb.WriteString("║")
 	sb.WriteString(Reset)
-	sb.WriteString(titleLine)
+	sb.WriteString(PadRight(line1, width))
 	sb.WriteString(CyberCyan)
 	sb.WriteString("║")
 	sb.WriteString(Reset)
 	sb.WriteString("\n")
 
 	// 分隔線
-	sb.WriteString(CyberCyan)
+	sb.WriteString(CyberMagenta)
 	sb.WriteString("╠")
 	sb.WriteString(strings.Repeat("═", width))
 	sb.WriteString("╣")
 	sb.WriteString(Reset)
 	sb.WriteString("\n")
 
-	// 路徑 + Git + Session 資訊
-	infoLine := t.formatInfoLine(data, width)
+	// 第二行：Session 統計 | Cost
+	line2 := fmt.Sprintf(" %s%5s%s tok  %s%3d%s msg  %s%6s%s  %s│%s  %s%s%s ses  %s%s%s day  %s%s%s mon  %s%s/h%s  %s%d%%hit%s",
+		ColorPurple, FormatTokens(data.TokenCount), Reset,
+		ColorCyan, data.MessageCount, Reset,
+		ColorSilver, data.SessionTime, Reset,
+		ColorDim, Reset,
+		ColorGreen, FormatCost(data.SessionCost), Reset,
+		ColorYellow, FormatCost(data.DayCost), Reset,
+		ColorPurple, FormatCost(data.MonthCost), Reset,
+		ColorRed, FormatCost(data.BurnRate), Reset,
+		ColorGreen, data.CacheHitRate, Reset)
+
 	sb.WriteString(CyberCyan)
 	sb.WriteString("║")
 	sb.WriteString(Reset)
-	sb.WriteString(infoLine)
+	sb.WriteString(PadRight(line2, width))
 	sb.WriteString(CyberCyan)
 	sb.WriteString("║")
 	sb.WriteString(Reset)
 	sb.WriteString("\n")
 
-	// 分隔線
-	sb.WriteString(CyberCyan)
-	sb.WriteString("╠")
-	sb.WriteString(strings.Repeat("═", width))
-	sb.WriteString("╣")
-	sb.WriteString(Reset)
-	sb.WriteString("\n")
+	// 第三行：光棒
+	color1, bg1 := GetBarColor(data.ContextPercent)
+	color5, bg5 := GetBarColor(data.API5hrPercent)
+	color7, bg7 := GetBarColor(data.API7dayPercent)
 
-	// 成本行
-	costLine := t.formatCostLine(data, width)
-	sb.WriteString(CyberCyan)
-	sb.WriteString("║")
-	sb.WriteString(Reset)
-	sb.WriteString(costLine)
-	sb.WriteString(CyberCyan)
-	sb.WriteString("║")
-	sb.WriteString(Reset)
-	sb.WriteString("\n")
+	line3 := fmt.Sprintf(" %sCtx%s %s %s%3d%%%s  %s│%s  %s5hr%s %s %s%3d%%%s %s%s%s  %s│%s  %s7dy%s %s %s%3d%%%s %s%s%s",
+		ColorLabelDim, Reset,
+		GenerateGlowBar(data.ContextPercent, 15, color1, bg1),
+		color1, data.ContextPercent, Reset,
+		ColorDim, Reset,
+		ColorLabelDim, Reset,
+		GenerateGlowBar(data.API5hrPercent, 10, color5, bg5),
+		color5, data.API5hrPercent, Reset,
+		ColorDim, data.API5hrTimeLeft, Reset,
+		ColorDim, Reset,
+		ColorLabelDim, Reset,
+		GenerateGlowBar(data.API7dayPercent, 10, color7, bg7),
+		color7, data.API7dayPercent, Reset,
+		ColorDim, data.API7dayTimeLeft, Reset)
 
-	// 分隔線
-	sb.WriteString(CyberCyan)
-	sb.WriteString("╠")
-	sb.WriteString(strings.Repeat("═", width))
-	sb.WriteString("╣")
-	sb.WriteString(Reset)
-	sb.WriteString("\n")
-
-	// Context 行
-	ctxLine := t.formatContextLine(data, width)
 	sb.WriteString(CyberCyan)
 	sb.WriteString("║")
 	sb.WriteString(Reset)
-	sb.WriteString(ctxLine)
-	sb.WriteString(CyberCyan)
-	sb.WriteString("║")
-	sb.WriteString(Reset)
-	sb.WriteString("\n")
-
-	// API 行
-	apiLine := t.formatAPILine(data, width)
-	sb.WriteString(CyberCyan)
-	sb.WriteString("║")
-	sb.WriteString(Reset)
-	sb.WriteString(apiLine)
+	sb.WriteString(PadRight(line3, width))
 	sb.WriteString(CyberCyan)
 	sb.WriteString("║")
 	sb.WriteString(Reset)
 	sb.WriteString("\n")
 
 	// 底部框線
-	sb.WriteString(CyberCyan)
+	sb.WriteString(CyberMagenta)
 	sb.WriteString("╚")
 	sb.WriteString(strings.Repeat("═", width))
 	sb.WriteString("╝")
@@ -130,92 +136,4 @@ func (t *CyberpunkTheme) Render(data StatusData) string {
 	sb.WriteString("\n")
 
 	return sb.String()
-}
-
-func (t *CyberpunkTheme) formatTitleLine(data StatusData, width int) string {
-	modelColor, modelIcon := GetModelConfig(data.ModelType)
-
-	title := fmt.Sprintf("  %s%sCLAUDE CODE%s", Bold, CyberMagenta, Reset)
-	version := fmt.Sprintf("  %s%s%s", CyberGreen, data.Version, Reset)
-	update := ""
-	if data.UpdateAvailable {
-		update = fmt.Sprintf(" %s%s⬆ NEW%s", Bold, CyberOrange, Reset)
-	}
-	model := fmt.Sprintf("  %s│%s  %s%s %s%s", ColorDim, Reset, modelColor, modelIcon, data.ModelName, Reset)
-
-	content := title + version + update + model
-	return PadRight(content, width)
-}
-
-func (t *CyberpunkTheme) formatInfoLine(data StatusData, width int) string {
-	path := fmt.Sprintf(" %s📂 %s%s", ColorYellow, data.ProjectPath, Reset)
-
-	git := ""
-	if data.GitBranch != "" {
-		git = fmt.Sprintf("  %s⚡ %s%s", CyberCyan, data.GitBranch, Reset)
-		if data.GitStaged > 0 {
-			git += fmt.Sprintf(" %s+%d%s", ColorGreen, data.GitStaged, Reset)
-		}
-		if data.GitDirty > 0 {
-			git += fmt.Sprintf(" %s~%d%s", ColorOrange, data.GitDirty, Reset)
-		}
-	}
-
-	stats := fmt.Sprintf("  %s│%s  %s⏱ %s%s  %s│%s  %s💬 %d msg%s  %s│%s  %s📊 %s tok%s",
-		ColorDim, Reset,
-		CyberMagenta, data.SessionTime, Reset,
-		ColorDim, Reset,
-		CyberCyan, data.MessageCount, Reset,
-		ColorDim, Reset,
-		ColorPurple, FormatTokens(data.TokenCount), Reset)
-
-	return PadRight(path+git+stats, width)
-}
-
-func (t *CyberpunkTheme) formatCostLine(data StatusData, width int) string {
-	content := fmt.Sprintf(" %s💰 COST%s  ses %s%s%s  day %s%s%s  mon %s%s%s  %s│%s  wk %s%s%s  avg %s%s/h%s  hit %s%d%%%s",
-		Bold, Reset,
-		CyberGreen, FormatCost(data.SessionCost), Reset,
-		ColorYellow, FormatCost(data.DayCost), Reset,
-		ColorPurple, FormatCost(data.MonthCost), Reset,
-		ColorDim, Reset,
-		ColorBlue, FormatCost(data.WeekCost), Reset,
-		ColorRed, FormatCost(data.BurnRate), Reset,
-		ColorGreen, data.CacheHitRate, Reset)
-
-	return PadRight(content, width)
-}
-
-func (t *CyberpunkTheme) formatContextLine(data StatusData, width int) string {
-	color, bgColor := GetBarColor(data.ContextPercent)
-	bar := GenerateGlowBar(data.ContextPercent, 20, color, bgColor)
-	pctColor := GetContextColor(data.ContextPercent)
-
-	color5, bgColor5 := GetBarColor(data.API5hrPercent)
-	bar5 := GenerateGlowBar(data.API5hrPercent, 10, color5, bgColor5)
-
-	content := fmt.Sprintf(" %s📈 CTX%s   %s %s%4d%%%s  %s%s  %s│%s  %s5hr%s %s %s%d%%%s (%s)",
-		Bold, Reset,
-		bar, pctColor, data.ContextPercent, Reset,
-		ColorDim, FormatNumber(data.ContextUsed),
-		ColorDim, Reset,
-		Bold, Reset,
-		bar5, color5, data.API5hrPercent, Reset,
-		data.API5hrTimeLeft)
-
-	return PadRight(content, width)
-}
-
-func (t *CyberpunkTheme) formatAPILine(data StatusData, width int) string {
-	color7, bgColor7 := GetBarColor(data.API7dayPercent)
-	bar7 := GenerateGlowBar(data.API7dayPercent, 20, color7, bgColor7)
-
-	content := fmt.Sprintf("          %s└─ context window ─┘%s            %s│%s  %s7dy%s %s %s%d%%%s (%s)",
-		ColorDim, Reset,
-		ColorDim, Reset,
-		Bold, Reset,
-		bar7, color7, data.API7dayPercent, Reset,
-		data.API7dayTimeLeft)
-
-	return PadRight(content, width)
 }

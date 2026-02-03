@@ -134,6 +134,7 @@ func main() {
 	listThemes := flag.Bool("list-themes", false, "列出所有可用主題")
 	previewTheme := flag.String("preview", "", "預覽指定主題")
 	setTheme := flag.String("set-theme", "", "設定主題")
+	menuMode := flag.Bool("menu", false, "互動式主題選單")
 	flag.Parse()
 
 	// 處理命令列參數
@@ -149,6 +150,11 @@ func main() {
 
 	if *setTheme != "" {
 		saveThemeConfig(*setTheme)
+		return
+	}
+
+	if *menuMode {
+		runInteractiveMenu()
 		return
 	}
 
@@ -199,7 +205,177 @@ func printThemeList() {
 	fmt.Println("\n使用方式：")
 	fmt.Println("  ./statusline --set-theme <theme-name>  設定主題")
 	fmt.Println("  ./statusline --preview <theme-name>    預覽主題")
+	fmt.Println("  ./statusline --menu                    互動式選單")
 	fmt.Println()
+}
+
+// 互動式主題選單
+func runInteractiveMenu() {
+	themeList := themes.ListThemes()
+	sort.Slice(themeList, func(i, j int) bool {
+		return themeList[i].Name() < themeList[j].Name()
+	})
+
+	if len(themeList) == 0 {
+		fmt.Println("沒有可用的主題")
+		return
+	}
+
+	// 找到目前使用的主題
+	currentTheme := loadThemeConfig()
+	selectedIndex := 0
+	for i, t := range themeList {
+		if t.Name() == currentTheme {
+			selectedIndex = i
+			break
+		}
+	}
+
+	// 設定終端機為 raw mode
+	oldState, err := makeRaw(os.Stdin.Fd())
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "無法設定終端機: %v\n", err)
+		return
+	}
+	defer restore(os.Stdin.Fd(), oldState)
+
+	// 測試資料
+	testData := themes.StatusData{
+		ModelName:       "Opus 4.5",
+		ModelType:       "Opus",
+		Version:         "v1.0.75",
+		UpdateAvailable: true,
+		ProjectPath:     "~/cookys/project",
+		GitBranch:       "main",
+		GitStaged:       3,
+		GitDirty:        5,
+		TokenCount:      45200,
+		MessageCount:    12,
+		SessionTime:     "1h30m",
+		CacheHitRate:    78,
+		SessionCost:     0.12,
+		DayCost:         3.45,
+		MonthCost:       67.89,
+		WeekCost:        23.45,
+		BurnRate:        5.2,
+		ContextUsed:     90000,
+		ContextPercent:  45,
+		API5hrPercent:   23,
+		API5hrTimeLeft:  "3h17m",
+		API7dayPercent:  67,
+		API7dayTimeLeft: "2d5h",
+	}
+
+	// 輸出函式 (raw mode 下需要 \r\n)
+	println := func(s string) {
+		fmt.Print(s + "\r\n")
+	}
+
+	renderMenu := func() {
+		// 清除畫面
+		fmt.Print("\033[2J\033[H")
+
+		// 前一個主題名稱
+		prevName := ""
+		if selectedIndex > 0 {
+			prevName = themeList[selectedIndex-1].Name()
+		}
+
+		// 下一個主題名稱
+		nextName := ""
+		if selectedIndex < len(themeList)-1 {
+			nextName = themeList[selectedIndex+1].Name()
+		}
+
+		// 標題列：顯示前一個、當前、下一個
+		println(fmt.Sprintf("\033[1m🎨 主題選擇器\033[0m   \033[2m%12s ◀\033[0m \033[1;7m %s \033[0m \033[2m▶ %-12s\033[0m",
+			prevName, themeList[selectedIndex].Name(), nextName))
+		println(fmt.Sprintf("   %s", themeList[selectedIndex].Description()))
+		println(strings.Repeat("─", 100))
+
+		// 預覽 (替換 \n 為 \r\n)
+		preview := themeList[selectedIndex].Render(testData)
+		preview = strings.ReplaceAll(preview, "\n", "\r\n")
+		fmt.Print(preview)
+
+		println(strings.Repeat("─", 100))
+		println("\033[2m← → 選擇主題  |  Enter 確認  |  q 取消\033[0m")
+	}
+
+	renderMenu()
+
+	// 讀取按鍵
+	buf := make([]byte, 3)
+	for {
+		n, err := os.Stdin.Read(buf)
+		if err != nil {
+			break
+		}
+
+		if n == 1 {
+			switch buf[0] {
+			case 'q', 'Q', 27: // q 或 Escape
+				fmt.Print("\033[2J\033[H")
+				fmt.Print("已取消\r\n")
+				return
+			case 13, 10: // Enter
+				fmt.Print("\033[2J\033[H")
+				saveThemeConfig(themeList[selectedIndex].Name())
+				fmt.Printf("✓ 已設定主題為: %s\r\n", themeList[selectedIndex].Name())
+				return
+			case 'h', 'H': // vim-style left
+				if selectedIndex > 0 {
+					selectedIndex--
+					renderMenu()
+				}
+			case 'l', 'L': // vim-style right
+				if selectedIndex < len(themeList)-1 {
+					selectedIndex++
+					renderMenu()
+				}
+			}
+		} else if n == 3 && buf[0] == 27 && buf[1] == 91 {
+			// 方向鍵
+			switch buf[2] {
+			case 68: // 左
+				if selectedIndex > 0 {
+					selectedIndex--
+					renderMenu()
+				}
+			case 67: // 右
+				if selectedIndex < len(themeList)-1 {
+					selectedIndex++
+					renderMenu()
+				}
+			}
+		}
+	}
+}
+
+// 終端機 raw mode 相關函式
+func makeRaw(fd uintptr) ([]byte, error) {
+	// 使用 stty 設定 raw mode
+	cmd := exec.Command("stty", "-F", "/dev/stdin", "raw", "-echo")
+	cmd.Stdin = os.Stdin
+	if err := cmd.Run(); err != nil {
+		// macOS 使用不同語法
+		cmd = exec.Command("stty", "raw", "-echo")
+		cmd.Stdin = os.Stdin
+		cmd.Run()
+	}
+	return nil, nil
+}
+
+func restore(fd uintptr, oldState []byte) {
+	// 恢復終端機設定
+	cmd := exec.Command("stty", "-F", "/dev/stdin", "sane")
+	cmd.Stdin = os.Stdin
+	if err := cmd.Run(); err != nil {
+		// macOS
+		cmd = exec.Command("stty", "sane")
+		cmd.Stdin = os.Stdin
+		cmd.Run()
+	}
 }
 
 // 預覽主題
