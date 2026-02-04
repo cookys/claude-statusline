@@ -1,3 +1,33 @@
+# Binary
 statusline
+statusline.exe
+
+# OS files
 .DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Go
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+go.work
+
+# Build
+dist/
+*.tar.gz
+*.zip
+
+# Temp files
 *.tmp
+*.log

@@ -4,18 +4,38 @@
 [![Release](https://github.com/kevinlincg/claude-statusline/actions/workflows/release.yml/badge.svg)](https://github.com/kevinlincg/claude-statusline/actions/workflows/release.yml)
 [![Go Report Card](https://goreportcard.com/badge/github.com/kevinlincg/claude-statusline)](https://goreportcard.com/report/github.com/kevinlincg/claude-statusline)
 [![GitHub release](https://img.shields.io/github/v/release/kevinlincg/claude-statusline)](https://github.com/kevinlincg/claude-statusline/releases/latest)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![SLSA 3](https://slsa.dev/images/gh-badge-level3.svg)](https://slsa.dev)
+
+[English](README.md) | [繁體中文](README.zh-TW.md) | [简体中文](README.zh-CN.md) | [日本語](README.ja.md)
 
 为 Claude Code 打造的自定义状态栏，使用 Go 语言编写。显示模型信息、Git 状态、API 使用量、Token 消耗、成本指标等。
 
 ## 安装
 
-### 需求
+### 方式一：下载可执行文件（推荐）
 
-- Go 1.18+
-- macOS 或 Linux
+从 [GitHub Releases](https://github.com/kevinlincg/claude-statusline/releases/latest) 下载适合您平台的版本：
 
-### 步骤
+```bash
+# macOS (Apple Silicon)
+curl -L https://github.com/kevinlincg/claude-statusline/releases/latest/download/claude-statusline_darwin_arm64.tar.gz | tar xz
+mv statusline ~/.claude/statusline-go/
+
+# macOS (Intel)
+curl -L https://github.com/kevinlincg/claude-statusline/releases/latest/download/claude-statusline_darwin_amd64.tar.gz | tar xz
+mv statusline ~/.claude/statusline-go/
+
+# Linux (x64)
+curl -L https://github.com/kevinlincg/claude-statusline/releases/latest/download/claude-statusline_linux_amd64.tar.gz | tar xz
+mv statusline ~/.claude/statusline-go/
+
+# Linux (ARM64)
+curl -L https://github.com/kevinlincg/claude-statusline/releases/latest/download/claude-statusline_linux_arm64.tar.gz | tar xz
+mv statusline ~/.claude/statusline-go/
+```
+
+### 方式二：从源码编译
 
 ```bash
 # 克隆项目
@@ -23,20 +43,47 @@ git clone https://github.com/kevinlincg/claude-statusline.git ~/.claude/statusli
 
 # 编译
 cd ~/.claude/statusline-go
-go build -o statusline statusline.go
+go build -o statusline .
+```
 
-# 配置 Claude Code (~/.claude/settings.json)
+### 配置 Claude Code
+
+编辑 `~/.claude/settings.json`：
+
+```json
 {
   "statusLine": {
     "type": "command",
-    "command": "/path/to/.claude/statusline-go/statusline"
+    "command": "~/.claude/statusline-go/statusline"
   }
 }
 ```
 
 ## 主题
 
-编辑 `~/.claude/statusline-go/config.json` 来自定义状态栏外观：
+### 交互式主题选择器
+
+使用交互式菜单预览并选择主题：
+
+```bash
+./statusline --menu
+```
+
+使用方向键（或 h/l）浏览主题，Enter 确认，q 取消。
+
+### 命令行选项
+
+```bash
+./statusline --list-themes      # 列出所有主题
+./statusline --preview <name>   # 预览特定主题
+./statusline --set-theme <name> # 直接设置主题
+./statusline --menu             # 交互式主题选择器
+./statusline --version          # 显示版本信息
+```
+
+### 手动配置
+
+编辑 `~/.claude/statusline-go/config.json`：
 
 ```json
 {
@@ -114,6 +161,14 @@ go build -o statusline statusline.go
 - `sessions/` - 单个 Session 数据
 - `stats/` - 每日与每周 Token 统计
 
+## 贡献
+
+欢迎贡献！请参阅 [CONTRIBUTING.md](CONTRIBUTING.md) 了解贡献指南。
+
+## 安全性
+
+发布的文件均经过签名并包含 SLSA 来源证明。请参阅 [SECURITY.md](SECURITY.md) 了解验证方式。
+
 ## 许可证
 
-MIT License
+[MIT License](LICENSE)

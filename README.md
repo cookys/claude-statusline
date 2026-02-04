@@ -4,6 +4,7 @@
 [![Release](https://github.com/kevinlincg/claude-statusline/actions/workflows/release.yml/badge.svg)](https://github.com/kevinlincg/claude-statusline/actions/workflows/release.yml)
 [![Go Report Card](https://goreportcard.com/badge/github.com/kevinlincg/claude-statusline)](https://goreportcard.com/report/github.com/kevinlincg/claude-statusline)
 [![GitHub release](https://img.shields.io/github/v/release/kevinlincg/claude-statusline)](https://github.com/kevinlincg/claude-statusline/releases/latest)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![SLSA 3](https://slsa.dev/images/gh-badge-level3.svg)](https://slsa.dev)
 
 [English](README.md) | [繁體中文](README.zh-TW.md) | [简体中文](README.zh-CN.md) | [日本語](README.ja.md)
@@ -12,12 +13,29 @@ A custom status line for Claude Code written in Go. Displays model info, Git sta
 
 ## Installation
 
-### Requirements
+### Option 1: Download Binary (Recommended)
 
-- Go 1.18+
-- macOS or Linux
+Download the latest release for your platform from [GitHub Releases](https://github.com/kevinlincg/claude-statusline/releases/latest):
 
-### Steps
+```bash
+# macOS (Apple Silicon)
+curl -L https://github.com/kevinlincg/claude-statusline/releases/latest/download/claude-statusline_darwin_arm64.tar.gz | tar xz
+mv statusline ~/.claude/statusline-go/
+
+# macOS (Intel)
+curl -L https://github.com/kevinlincg/claude-statusline/releases/latest/download/claude-statusline_darwin_amd64.tar.gz | tar xz
+mv statusline ~/.claude/statusline-go/
+
+# Linux (x64)
+curl -L https://github.com/kevinlincg/claude-statusline/releases/latest/download/claude-statusline_linux_amd64.tar.gz | tar xz
+mv statusline ~/.claude/statusline-go/
+
+# Linux (ARM64)
+curl -L https://github.com/kevinlincg/claude-statusline/releases/latest/download/claude-statusline_linux_arm64.tar.gz | tar xz
+mv statusline ~/.claude/statusline-go/
+```
+
+### Option 2: Build from Source
 
 ```bash
 # Clone the repository
@@ -25,20 +43,47 @@ git clone https://github.com/kevinlincg/claude-statusline.git ~/.claude/statusli
 
 # Build
 cd ~/.claude/statusline-go
-go build -o statusline statusline.go
+go build -o statusline .
+```
 
-# Configure Claude Code (~/.claude/settings.json)
+### Configure Claude Code
+
+Add to `~/.claude/settings.json`:
+
+```json
 {
   "statusLine": {
     "type": "command",
-    "command": "/path/to/.claude/statusline-go/statusline"
+    "command": "~/.claude/statusline-go/statusline"
   }
 }
 ```
 
 ## Themes
 
-Customize your status line appearance by editing `~/.claude/statusline-go/config.json`:
+### Interactive Theme Selector
+
+Use the interactive menu to preview and select themes:
+
+```bash
+./statusline --menu
+```
+
+Use arrow keys (or h/l) to browse themes, Enter to confirm, q to cancel.
+
+### Command Line Options
+
+```bash
+./statusline --list-themes      # List all available themes
+./statusline --preview <name>   # Preview a specific theme
+./statusline --set-theme <name> # Set theme directly
+./statusline --menu             # Interactive theme selector
+./statusline --version          # Show version information
+```
+
+### Manual Configuration
+
+Edit `~/.claude/statusline-go/config.json`:
 
 ```json
 {
@@ -116,6 +161,14 @@ Stats are saved in `~/.claude/session-tracker/`:
 - `sessions/` - Individual session data
 - `stats/` - Daily and weekly token statistics
 
+## Contributing
+
+Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+## Security
+
+Release artifacts are signed and include SLSA provenance. See [SECURITY.md](SECURITY.md) for verification instructions.
+
 ## License
 
-MIT License
+[MIT License](LICENSE)

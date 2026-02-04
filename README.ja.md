@@ -4,18 +4,38 @@
 [![Release](https://github.com/kevinlincg/claude-statusline/actions/workflows/release.yml/badge.svg)](https://github.com/kevinlincg/claude-statusline/actions/workflows/release.yml)
 [![Go Report Card](https://goreportcard.com/badge/github.com/kevinlincg/claude-statusline)](https://goreportcard.com/report/github.com/kevinlincg/claude-statusline)
 [![GitHub release](https://img.shields.io/github/v/release/kevinlincg/claude-statusline)](https://github.com/kevinlincg/claude-statusline/releases/latest)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![SLSA 3](https://slsa.dev/images/gh-badge-level3.svg)](https://slsa.dev)
+
+[English](README.md) | [繁體中文](README.zh-TW.md) | [简体中文](README.zh-CN.md) | [日本語](README.ja.md)
 
 Claude Code 用のカスタムステータスライン。Go 言語で作成。モデル情報、Git ステータス、API 使用量、トークン消費、コスト指標などを表示します。
 
 ## インストール
 
-### 必要条件
+### 方法1：バイナリをダウンロード（推奨）
 
-- Go 1.18+
-- macOS または Linux
+[GitHub Releases](https://github.com/kevinlincg/claude-statusline/releases/latest) からお使いのプラットフォーム用のバイナリをダウンロード：
 
-### 手順
+```bash
+# macOS (Apple Silicon)
+curl -L https://github.com/kevinlincg/claude-statusline/releases/latest/download/claude-statusline_darwin_arm64.tar.gz | tar xz
+mv statusline ~/.claude/statusline-go/
+
+# macOS (Intel)
+curl -L https://github.com/kevinlincg/claude-statusline/releases/latest/download/claude-statusline_darwin_amd64.tar.gz | tar xz
+mv statusline ~/.claude/statusline-go/
+
+# Linux (x64)
+curl -L https://github.com/kevinlincg/claude-statusline/releases/latest/download/claude-statusline_linux_amd64.tar.gz | tar xz
+mv statusline ~/.claude/statusline-go/
+
+# Linux (ARM64)
+curl -L https://github.com/kevinlincg/claude-statusline/releases/latest/download/claude-statusline_linux_arm64.tar.gz | tar xz
+mv statusline ~/.claude/statusline-go/
+```
+
+### 方法2：ソースからビルド
 
 ```bash
 # リポジトリをクローン
@@ -23,20 +43,47 @@ git clone https://github.com/kevinlincg/claude-statusline.git ~/.claude/statusli
 
 # ビルド
 cd ~/.claude/statusline-go
-go build -o statusline statusline.go
+go build -o statusline .
+```
 
-# Claude Code を設定 (~/.claude/settings.json)
+### Claude Code を設定
+
+`~/.claude/settings.json` を編集：
+
+```json
 {
   "statusLine": {
     "type": "command",
-    "command": "/path/to/.claude/statusline-go/statusline"
+    "command": "~/.claude/statusline-go/statusline"
   }
 }
 ```
 
 ## テーマ
 
-`~/.claude/statusline-go/config.json` を編集してステータスラインの外観をカスタマイズ：
+### インタラクティブテーマセレクター
+
+インタラクティブメニューでテーマをプレビューして選択：
+
+```bash
+./statusline --menu
+```
+
+矢印キー（または h/l）でテーマを閲覧、Enter で確定、q でキャンセル。
+
+### コマンドラインオプション
+
+```bash
+./statusline --list-themes      # すべてのテーマを一覧表示
+./statusline --preview <name>   # 特定のテーマをプレビュー
+./statusline --set-theme <name> # テーマを直接設定
+./statusline --menu             # インタラクティブテーマセレクター
+./statusline --version          # バージョン情報を表示
+```
+
+### 手動設定
+
+`~/.claude/statusline-go/config.json` を編集：
 
 ```json
 {
@@ -114,6 +161,14 @@ go build -o statusline statusline.go
 - `sessions/` - 個別セッションデータ
 - `stats/` - 日次・週次トークン統計
 
+## コントリビュート
+
+コントリビュートを歓迎します！ガイドラインは [CONTRIBUTING.md](CONTRIBUTING.md) をご覧ください。
+
+## セキュリティ
+
+リリースアーティファクトは署名され、SLSA 来歴が含まれています。検証方法は [SECURITY.md](SECURITY.md) をご覧ください。
+
 ## ライセンス
 
-MIT License
+[MIT License](LICENSE)
