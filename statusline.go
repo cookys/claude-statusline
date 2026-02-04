@@ -18,6 +18,13 @@ import (
 	"statusline/themes"
 )
 
+// Version information (set via ldflags during build)
+var (
+	Version = "dev"
+	Commit  = "none"
+	Date    = "unknown"
+)
+
 // Model pricing (per 1M tokens)
 var modelPricing = map[string]struct {
 	Input      float64
@@ -135,9 +142,15 @@ func main() {
 	previewTheme := flag.String("preview", "", "Preview a specific theme")
 	setTheme := flag.String("set-theme", "", "Set theme")
 	menuMode := flag.Bool("menu", false, "Interactive theme menu")
+	showVersion := flag.Bool("version", false, "Show version information")
 	flag.Parse()
 
 	// Process command line arguments
+	if *showVersion {
+		fmt.Printf("statusline %s (commit: %s, built: %s)\n", Version, Commit, Date)
+		return
+	}
+
 	if *listThemes {
 		printThemeList()
 		return

@@ -1,0 +1,48 @@
+run:
+  timeout: 5m
+  modules-download-mode: readonly
+
+linters:
+  enable:
+    - errcheck
+    - gosimple
+    - govet
+    - ineffassign
+    - staticcheck
+    - gosec
+    - gofmt
+    - goimports
+    - misspell
+    - unconvert
+    - unused
+
+linters-settings:
+  errcheck:
+    check-type-assertions: true
+    check-blank: false
+
+  gosec:
+    excludes:
+      - G104 # Audit errors not checked (allow for some error ignoring)
+      - G304 # File path provided as taint input (allow file reading)
+
+  goimports:
+    local-prefixes: statusline
+
+  misspell:
+    locale: US
+
+issues:
+  exclude-rules:
+    # Allow unused parameters in test files
+    - path: _test\.go
+      linters:
+        - unused
+
+    # Allow unchecked errors in defer statements
+    - source: "defer"
+      linters:
+        - errcheck
+
+  max-issues-per-linter: 50
+  max-same-issues: 10

@@ -1,0 +1,102 @@
+# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
+version: 2
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: statusline
+    main: .
+    binary: statusline
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    ignore:
+      - goos: windows
+        goarch: arm64
+    ldflags:
+      - -s -w
+      - -X main.Version={{.Version}}
+      - -X main.Commit={{.Commit}}
+      - -X main.Date={{.Date}}
+
+archives:
+  - id: default
+    formats:
+      - tar.gz
+    format_overrides:
+      - goos: windows
+        formats:
+          - zip
+    name_template: >-
+      {{ .ProjectName }}_
+      {{- .Version }}_
+      {{- .Os }}_
+      {{- .Arch }}
+    files:
+      - README.md
+      - LICENSE*
+      - themes/**/*
+
+checksum:
+  name_template: 'checksums.txt'
+  algorithm: sha256
+
+changelog:
+  sort: asc
+  use: github
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+      - '^ci:'
+      - '^chore:'
+      - Merge pull request
+      - Merge branch
+  groups:
+    - title: Features
+      regexp: '^.*?feat(\([[:word:]]+\))??!?:.+$'
+      order: 0
+    - title: Bug Fixes
+      regexp: '^.*?fix(\([[:word:]]+\))??!?:.+$'
+      order: 1
+    - title: Performance
+      regexp: '^.*?perf(\([[:word:]]+\))??!?:.+$'
+      order: 2
+    - title: Others
+      order: 999
+
+release:
+  github:
+    owner: kevinlincg
+    name: claude-statusline
+  draft: false
+  prerelease: auto
+  mode: append
+  footer: |
+    ## Verification
+
+    ### SHA256 Checksums
+    ```bash
+    sha256sum -c checksums.txt
+    ```
+
+    ### Cosign Signature Verification
+    ```bash
+    cosign verify-blob \
+      --signature statusline_{{ .Version }}_<os>_<arch>.tar.gz.sig \
+      --certificate statusline_{{ .Version }}_<os>_<arch>.tar.gz.pem \
+      --certificate-identity-regexp 'https://github.com/kevinlincg/claude-statusline/.*' \
+      --certificate-oidc-issuer https://token.actions.githubusercontent.com \
+      statusline_{{ .Version }}_<os>_<arch>.tar.gz
+    ```
+
+    ### SLSA Provenance
+    This release includes [SLSA Level 3](https://slsa.dev/spec/v1.0/levels#build-l3) provenance attestations.
