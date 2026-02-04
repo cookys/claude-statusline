@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-// LORDTheme Legend of the Red Dragon 風格
+// LORDTheme Legend of the Red Dragon style
 type LORDTheme struct{}
 
 func init() {
@@ -17,7 +17,7 @@ func (t *LORDTheme) Name() string {
 }
 
 func (t *LORDTheme) Description() string {
-	return "LORD：紅龍傳說 BBS 經典文字遊戲風格"
+	return "LORD: Legend of the Red Dragon BBS classic text game style"
 }
 
 const (

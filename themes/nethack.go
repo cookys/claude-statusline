@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-// NetHackTheme NetHack/Roguelike 風格
+// NetHackTheme NetHack/Roguelike style
 type NetHackTheme struct{}
 
 func init() {
@@ -17,7 +17,7 @@ func (t *NetHackTheme) Name() string {
 }
 
 func (t *NetHackTheme) Description() string {
-	return "NetHack：經典 Roguelike 地牢探索風格"
+	return "NetHack: classic Roguelike dungeon exploration style"
 }
 
 const (

@@ -6,7 +6,7 @@ import (
 	"unicode"
 )
 
-// StuiTheme s-tui 壓力測試監視器風格
+// StuiTheme s-tui stress test monitor style
 type StuiTheme struct{}
 
 func init() {
@@ -18,7 +18,7 @@ func (t *StuiTheme) Name() string {
 }
 
 func (t *StuiTheme) Description() string {
-	return "s-tui：CPU 壓力測試監視器，頻率溫度圖風格"
+	return "s-tui: CPU stress test monitor, frequency/temperature graph style"
 }
 
 const (

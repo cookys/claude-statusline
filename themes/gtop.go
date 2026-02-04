@@ -6,7 +6,7 @@ import (
 	"unicode"
 )
 
-// GtopTheme gtop 簡約系統監視器風格
+// GtopTheme gtop minimal system monitor style
 type GtopTheme struct{}
 
 func init() {
@@ -18,7 +18,7 @@ func (t *GtopTheme) Name() string {
 }
 
 func (t *GtopTheme) Description() string {
-	return "gtop：簡約系統監視器，火花圖與乾淨排版"
+	return "gtop: minimal system monitor, sparkline graph and clean layout"
 }
 
 const (

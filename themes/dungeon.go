@@ -6,7 +6,7 @@ import (
 	"unicode"
 )
 
-// DungeonTheme 地牢火把風格
+// DungeonTheme dungeon torch style
 type DungeonTheme struct{}
 
 func init() {
@@ -18,7 +18,7 @@ func (t *DungeonTheme) Name() string {
 }
 
 func (t *DungeonTheme) Description() string {
-	return "地牢：石牆火把照明，黑暗冒險氛圍"
+	return "Dungeon: stone walls with torch lighting, dark adventure atmosphere"
 }
 
 const (

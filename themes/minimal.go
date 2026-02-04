@@ -6,7 +6,7 @@ import (
 	"unicode"
 )
 
-// MinimalTheme A 版：簡潔樹狀
+// MinimalTheme minimal tree-style
 type MinimalTheme struct{}
 
 func init() {
@@ -18,32 +18,32 @@ func (t *MinimalTheme) Name() string {
 }
 
 func (t *MinimalTheme) Description() string {
-	return "簡潔樹狀：無外框，樹狀結構顯示資訊"
+	return "Minimal tree-style: no border frame, tree structure display"
 }
 
 func (t *MinimalTheme) Render(data StatusData) string {
 	var sb strings.Builder
 	width := 80
 
-	// 第一行：路徑 + Git + 模型 + 版本
+	// Line 1: Path + Git + Model + Version
 	line1 := t.formatHeader(data)
 	sb.WriteString(minimalPadLine(" "+line1, width, ""))
 
-	// 第二行：Session | Context bar
+	// Line 2: Session | Context bar
 	leftSide2 := fmt.Sprintf(" %s├─%s %s",
 		ColorTreeDim, Reset,
 		t.formatSessionLine(data))
 	rightSide2 := t.formatContextBar(data)
 	sb.WriteString(minimalTwoColumn(leftSide2, rightSide2, width))
 
-	// 第三行：Cost | 5hr bar
+	// Line 3: Cost | 5hr bar
 	leftSide3 := fmt.Sprintf(" %s├─%s %s",
 		ColorTreeDim, Reset,
 		t.formatCostLine(data))
 	rightSide3 := t.format5hrBar(data)
 	sb.WriteString(minimalTwoColumn(leftSide3, rightSide3, width))
 
-	// 第四行：| 7day bar
+	// Line 4: | 7day bar
 	leftSide4 := fmt.Sprintf(" %s└─%s %s",
 		ColorTreeDim, Reset,
 		t.formatCostLine2(data))

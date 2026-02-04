@@ -5,13 +5,13 @@ import (
 	"strings"
 )
 
-// ANSI 顏色定義
+// ANSI color definitions
 const (
 	Reset  = "\033[0m"
 	Bold   = "\033[1m"
 	Dim    = "\033[2m"
 
-	// 基本顏色
+	// Basic colors
 	ColorGold   = "\033[38;2;195;158;83m"
 	ColorCyan   = "\033[38;2;118;170;185m"
 	ColorPink   = "\033[38;2;255;182;193m"
@@ -25,7 +25,7 @@ const (
 	ColorDim    = "\033[38;2;128;128;128m"
 	ColorYellow = "\033[38;2;255;215;0m"
 
-	// 亮色版本
+	// Bright colors
 	ColorBrightGreen  = "\033[38;2;80;255;100m"
 	ColorBrightCyan   = "\033[38;2;0;255;255m"
 	ColorBrightYellow = "\033[38;2;255;220;60m"
@@ -33,50 +33,50 @@ const (
 	ColorNeonPink     = "\033[38;2;255;0;255m"
 	ColorNeonOrange   = "\033[38;2;255;150;50m"
 
-	// Context 顏色
+	// Context colors
 	ColorCtxGreen = "\033[38;2;108;167;108m"
 	ColorCtxGold  = "\033[38;2;188;155;83m"
 	ColorCtxRed   = "\033[38;2;185;102;82m"
 
-	// 框線顏色
+	// Frame colors
 	ColorFrame    = "\033[38;2;60;60;60m"
 	ColorFrameDim = "\033[38;2;50;50;50m"
 	ColorLabel    = "\033[38;2;140;140;140m"
 	ColorLabelDim = "\033[38;2;100;100;100m"
 	ColorTreeDim  = "\033[38;2;100;100;100m"
 
-	// 光棒背景色
+	// Glow bar background colors
 	BgGreenGlow  = "\033[48;2;20;55;25m"
 	BgYellowGlow = "\033[48;2;55;50;15m"
 	BgCyanGlow   = "\033[48;2;0;60;60m"
 	BgRedGlow    = "\033[48;2;60;20;20m"
 )
 
-// StatusData 包含所有要顯示的狀態資料
+// StatusData contains all status data to display
 type StatusData struct {
-	// 模型資訊
+	// Model info
 	ModelName    string
 	ModelType    string // Opus, Sonnet, Haiku
 	ModelIcon    string
 	ModelColor   string
 
-	// 版本資訊
+	// Version info
 	Version       string
 	UpdateAvailable bool
 
-	// 工作區資訊
+	// Workspace info
 	ProjectPath string
 	GitBranch   string
 	GitStaged   int
 	GitDirty    int
 
-	// Session 統計
+	// Session stats
 	TokenCount   int64
 	MessageCount int
 	SessionTime  string
 	CacheHitRate int
 
-	// 成本
+	// Cost
 	SessionCost float64
 	DayCost     float64
 	MonthCost   float64
@@ -87,35 +87,35 @@ type StatusData struct {
 	ContextUsed    int
 	ContextPercent int
 
-	// API 限制
+	// API limits
 	API5hrPercent   int
 	API5hrTimeLeft  string
 	API7dayPercent  int
 	API7dayTimeLeft string
 }
 
-// Theme 介面定義
+// Theme interface definition
 type Theme interface {
 	Name() string
 	Description() string
 	Render(data StatusData) string
 }
 
-// ThemeRegistry 主題註冊表
+// ThemeRegistry stores all registered themes
 var ThemeRegistry = make(map[string]Theme)
 
-// RegisterTheme 註冊主題
+// RegisterTheme registers a theme
 func RegisterTheme(theme Theme) {
 	ThemeRegistry[theme.Name()] = theme
 }
 
-// GetTheme 獲取主題
+// GetTheme retrieves a theme by name
 func GetTheme(name string) (Theme, bool) {
 	theme, ok := ThemeRegistry[name]
 	return theme, ok
 }
 
-// ListThemes 列出所有主題
+// ListThemes returns all registered themes
 func ListThemes() []Theme {
 	themes := make([]Theme, 0, len(ThemeRegistry))
 	for _, theme := range ThemeRegistry {
@@ -124,9 +124,9 @@ func ListThemes() []Theme {
 	return themes
 }
 
-// 輔助函數
+// Helper functions
 
-// FormatTokens 格式化 token 數量
+// FormatTokens formats token count with K/M suffix
 func FormatTokens(tokens int64) string {
 	if tokens >= 1000000 {
 		return fmt.Sprintf("%.1fM", float64(tokens)/1000000)
@@ -136,13 +136,13 @@ func FormatTokens(tokens int64) string {
 	return fmt.Sprintf("%d", tokens)
 }
 
-// FormatTokensFixed 格式化 token 數量（固定寬度）
+// FormatTokensFixed formats token count with fixed width
 func FormatTokensFixed(tokens int64, width int) string {
 	s := FormatTokens(tokens)
 	return PadLeft(s, width)
 }
 
-// FormatCost 格式化成本
+// FormatCost formats cost value
 func FormatCost(cost float64) string {
 	if cost >= 100 {
 		return fmt.Sprintf("$%.0f", cost)
@@ -154,7 +154,7 @@ func FormatCost(cost float64) string {
 	return fmt.Sprintf("$%.2f", cost)
 }
 
-// FormatCostShort 格式化成本（簡短）
+// FormatCostShort formats cost value (short form)
 func FormatCostShort(cost float64) string {
 	if cost >= 100 {
 		return fmt.Sprintf("$%.0f", cost)
@@ -164,18 +164,18 @@ func FormatCostShort(cost float64) string {
 	return fmt.Sprintf("$%.2f", cost)
 }
 
-// FormatPercent 格式化百分比
+// FormatPercent formats percentage
 func FormatPercent(pct int) string {
 	return fmt.Sprintf("%d%%", pct)
 }
 
-// FormatPercentFixed 格式化百分比（固定寬度）
+// FormatPercentFixed formats percentage with fixed width
 func FormatPercentFixed(pct int, width int) string {
 	s := fmt.Sprintf("%d%%", pct)
 	return PadLeft(s, width)
 }
 
-// FormatNumber 格式化數字
+// FormatNumber formats number with K/M suffix
 func FormatNumber(num int) string {
 	if num >= 1000000 {
 		return fmt.Sprintf("%dM", num/1000000)
@@ -185,7 +185,7 @@ func FormatNumber(num int) string {
 	return fmt.Sprintf("%d", num)
 }
 
-// ShortenPath 縮短路徑
+// ShortenPath shortens a path to fit within maxLen
 func ShortenPath(path string, maxLen int) string {
 	if len(path) <= maxLen {
 		return path
@@ -197,7 +197,7 @@ func ShortenPath(path string, maxLen int) string {
 	return path
 }
 
-// GenerateBar 生成進度條
+// GenerateBar generates a progress bar
 func GenerateBar(percent, width int, filledChar, emptyChar string, filledColor, emptyColor string) string {
 	filled := percent * width / 100
 	if filled > width {
@@ -219,7 +219,7 @@ func GenerateBar(percent, width int, filledChar, emptyChar string, filledColor, 
 	return bar.String()
 }
 
-// GenerateGlowBar 生成發光進度條
+// GenerateGlowBar generates a glowing progress bar
 func GenerateGlowBar(percent, width int, color, bgColor string) string {
 	filled := percent * width / 100
 	if filled > width {
@@ -243,7 +243,7 @@ func GenerateGlowBar(percent, width int, color, bgColor string) string {
 	return bar.String()
 }
 
-// GetBarColor 根據百分比獲取顏色
+// GetBarColor returns color based on percentage
 func GetBarColor(percent int) (string, string) {
 	if percent < 50 {
 		return ColorBrightGreen, BgGreenGlow
@@ -253,7 +253,7 @@ func GetBarColor(percent int) (string, string) {
 	return ColorRed, BgRedGlow
 }
 
-// GetContextColor 根據 context 百分比獲取顏色
+// GetContextColor returns color based on context percentage
 func GetContextColor(percent int) string {
 	if percent < 60 {
 		return ColorCtxGreen
@@ -263,7 +263,7 @@ func GetContextColor(percent int) string {
 	return ColorCtxRed
 }
 
-// PadLeft 左填充
+// PadLeft pads string on the left
 func PadLeft(s string, width int) string {
 	visible := VisibleWidth(s)
 	if visible >= width {
@@ -272,7 +272,7 @@ func PadLeft(s string, width int) string {
 	return strings.Repeat(" ", width-visible) + s
 }
 
-// PadRight 右填充
+// PadRight pads string on the right
 func PadRight(s string, width int) string {
 	visible := VisibleWidth(s)
 	if visible >= width {
@@ -281,7 +281,7 @@ func PadRight(s string, width int) string {
 	return s + strings.Repeat(" ", width-visible)
 }
 
-// PadCenter 置中填充
+// PadCenter centers string within given width
 func PadCenter(s string, width int) string {
 	visible := VisibleWidth(s)
 	if visible >= width {
@@ -292,9 +292,9 @@ func PadCenter(s string, width int) string {
 	return strings.Repeat(" ", left) + s + strings.Repeat(" ", right)
 }
 
-// VisibleWidth 計算可見寬度（排除 ANSI 碼）
+// VisibleWidth calculates visible width (excluding ANSI codes)
 func VisibleWidth(s string) int {
-	// 移除 ANSI escape codes
+	// Remove ANSI escape codes
 	clean := s
 	for {
 		start := strings.Index(clean, "\033[")
@@ -316,7 +316,7 @@ func VisibleWidth(s string) int {
 	return width
 }
 
-// RuneWidth 計算單個 rune 的顯示寬度
+// RuneWidth calculates display width of a single rune
 func RuneWidth(r rune) int {
 	// Variation selectors - zero width
 	if r >= 0xFE00 && r <= 0xFE0F {
@@ -360,7 +360,7 @@ func RuneWidth(r rune) int {
 	return 1
 }
 
-// GetModelConfig 獲取模型配置
+// GetModelConfig returns color and icon for model type
 func GetModelConfig(modelType string) (color string, icon string) {
 	switch modelType {
 	case "Opus":

@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-// SynthwaveTheme 合成波霓虹日落風格
+// SynthwaveTheme synthwave neon sunset style
 type SynthwaveTheme struct{}
 
 func init() {
@@ -17,7 +17,7 @@ func (t *SynthwaveTheme) Name() string {
 }
 
 func (t *SynthwaveTheme) Description() string {
-	return "合成波：霓虹日落漸層，80年代復古未來"
+	return "Synthwave: neon sunset gradient, 80s retro-futurism"
 }
 
 const (

@@ -18,7 +18,7 @@ import (
 	"statusline/themes"
 )
 
-// 模型價格 (per 1M tokens)
+// Model pricing (per 1M tokens)
 var modelPricing = map[string]struct {
 	Input      float64
 	Output     float64
@@ -45,7 +45,7 @@ var modelPricing = map[string]struct {
 	},
 }
 
-// 輸入資料結構
+// Input data structure
 type Input struct {
 	Model struct {
 		DisplayName string `json:"display_name"`
@@ -57,12 +57,12 @@ type Input struct {
 	TranscriptPath string `json:"transcript_path,omitempty"`
 }
 
-// Config 配置結構
+// Config structure
 type Config struct {
 	Theme string `json:"theme"`
 }
 
-// Session 資料結構
+// Session data structure
 type Session struct {
 	ID            string     `json:"id"`
 	Date          string     `json:"date"`
@@ -77,7 +77,7 @@ type Interval struct {
 	End   *int64 `json:"end"`
 }
 
-// UsageStats 統計結構
+// UsageStats structure
 type UsageStats struct {
 	TotalCost    float64            `json:"total_cost"`
 	SessionCosts map[string]float64 `json:"session_costs,omitempty"`
@@ -86,7 +86,7 @@ type UsageStats struct {
 	LastUpdated  int64              `json:"last_updated"`
 }
 
-// APIUsage 結構
+// APIUsage structure
 type APIUsage struct {
 	FiveHour struct {
 		Utilization float64 `json:"utilization"`
@@ -98,20 +98,20 @@ type APIUsage struct {
 	} `json:"seven_day"`
 }
 
-// Result 結果通道資料
+// Result channel data
 type Result struct {
 	Type string
 	Data interface{}
 }
 
-// GitInfo 包含 Git 狀態資訊
+// GitInfo contains Git status information
 type GitInfo struct {
 	Branch      string
 	DirtyCount  int
 	StagedCount int
 }
 
-// SessionUsageResult 包含 session 的用量資訊
+// SessionUsageResult contains session usage information
 type SessionUsageResult struct {
 	InputTokens      int64
 	OutputTokens     int64
@@ -122,7 +122,7 @@ type SessionUsageResult struct {
 	Duration         time.Duration
 }
 
-// 快取
+// Cache
 var (
 	apiUsageCache   *APIUsage
 	apiUsageExpires time.Time
@@ -130,14 +130,14 @@ var (
 )
 
 func main() {
-	// 命令列參數
-	listThemes := flag.Bool("list-themes", false, "列出所有可用主題")
-	previewTheme := flag.String("preview", "", "預覽指定主題")
-	setTheme := flag.String("set-theme", "", "設定主題")
-	menuMode := flag.Bool("menu", false, "互動式主題選單")
+	// Command line arguments
+	listThemes := flag.Bool("list-themes", false, "List all available themes")
+	previewTheme := flag.String("preview", "", "Preview a specific theme")
+	setTheme := flag.String("set-theme", "", "Set theme")
+	menuMode := flag.Bool("menu", false, "Interactive theme menu")
 	flag.Parse()
 
-	// 處理命令列參數
+	// Process command line arguments
 	if *listThemes {
 		printThemeList()
 		return
@@ -158,38 +158,38 @@ func main() {
 		return
 	}
 
-	// 正常模式：讀取 stdin 並輸出 statusline
+	// Normal mode: read stdin and output statusline
 	var input Input
 	if err := json.NewDecoder(os.Stdin).Decode(&input); err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to decode input: %v\n", err)
 		os.Exit(1)
 	}
 
-	// 取得模型類型
+	// Get model type
 	modelType := getModelType(input.Model.DisplayName)
 
-	// 並行獲取各種資訊
+	// Collect data in parallel
 	data := collectData(input, modelType)
 
-	// 更新 session 和統計
+	// Update session and stats
 	updateSession(input.SessionID)
 	updateDailyStats(input.SessionID, data, modelType)
 
-	// 載入主題配置
+	// Load theme config
 	themeName := loadThemeConfig()
 	theme, ok := themes.GetTheme(themeName)
 	if !ok {
-		// 預設主題
+		// Default theme
 		theme, _ = themes.GetTheme("classic_framed")
 	}
 
-	// 渲染輸出
+	// Render output
 	fmt.Print(theme.Render(data))
 }
 
-// 列出所有主題
+// printThemeList lists all available themes
 func printThemeList() {
-	fmt.Println("\n可用主題：")
+	fmt.Println("\nAvailable themes:")
 	fmt.Println(strings.Repeat("─", 60))
 
 	themeList := themes.ListThemes()
@@ -202,14 +202,14 @@ func printThemeList() {
 	}
 
 	fmt.Println(strings.Repeat("─", 60))
-	fmt.Println("\n使用方式：")
-	fmt.Println("  ./statusline --set-theme <theme-name>  設定主題")
-	fmt.Println("  ./statusline --preview <theme-name>    預覽主題")
-	fmt.Println("  ./statusline --menu                    互動式選單")
+	fmt.Println("\nUsage:")
+	fmt.Println("  ./statusline --set-theme <theme-name>  Set theme")
+	fmt.Println("  ./statusline --preview <theme-name>    Preview theme")
+	fmt.Println("  ./statusline --menu                    Interactive menu")
 	fmt.Println()
 }
 
-// 互動式主題選單
+// runInteractiveMenu runs interactive theme menu
 func runInteractiveMenu() {
 	themeList := themes.ListThemes()
 	sort.Slice(themeList, func(i, j int) bool {
@@ -217,11 +217,11 @@ func runInteractiveMenu() {
 	})
 
 	if len(themeList) == 0 {
-		fmt.Println("沒有可用的主題")
+		fmt.Println("No themes available")
 		return
 	}
 
-	// 找到目前使用的主題
+	// Find current theme
 	currentTheme := loadThemeConfig()
 	selectedIndex := 0
 	for i, t := range themeList {
@@ -231,15 +231,15 @@ func runInteractiveMenu() {
 		}
 	}
 
-	// 設定終端機為 raw mode
+	// Set terminal to raw mode
 	oldState, err := makeRaw(os.Stdin.Fd())
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "無法設定終端機: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Failed to set terminal: %v\n", err)
 		return
 	}
 	defer restore(os.Stdin.Fd(), oldState)
 
-	// 測試資料
+	// Test data
 	testData := themes.StatusData{
 		ModelName:       "Opus 4.5",
 		ModelType:       "Opus",
@@ -266,45 +266,45 @@ func runInteractiveMenu() {
 		API7dayTimeLeft: "2d5h",
 	}
 
-	// 輸出函式 (raw mode 下需要 \r\n)
+	// Print function (raw mode requires \r\n)
 	println := func(s string) {
 		fmt.Print(s + "\r\n")
 	}
 
 	renderMenu := func() {
-		// 清除畫面
+		// Clear screen
 		fmt.Print("\033[2J\033[H")
 
-		// 前一個主題名稱
+		// Previous theme name
 		prevName := ""
 		if selectedIndex > 0 {
 			prevName = themeList[selectedIndex-1].Name()
 		}
 
-		// 下一個主題名稱
+		// Next theme name
 		nextName := ""
 		if selectedIndex < len(themeList)-1 {
 			nextName = themeList[selectedIndex+1].Name()
 		}
 
-		// 標題列：顯示前一個、當前、下一個
-		println(fmt.Sprintf("\033[1m🎨 主題選擇器\033[0m   \033[2m%12s ◀\033[0m \033[1;7m %s \033[0m \033[2m▶ %-12s\033[0m",
+		// Title bar: show previous, current, next
+		println(fmt.Sprintf("\033[1mTheme Selector\033[0m   \033[2m%12s <\033[0m \033[1;7m %s \033[0m \033[2m> %-12s\033[0m",
 			prevName, themeList[selectedIndex].Name(), nextName))
 		println(fmt.Sprintf("   %s", themeList[selectedIndex].Description()))
 		println(strings.Repeat("─", 100))
 
-		// 預覽 (替換 \n 為 \r\n)
+		// Preview (replace \n with \r\n)
 		preview := themeList[selectedIndex].Render(testData)
 		preview = strings.ReplaceAll(preview, "\n", "\r\n")
 		fmt.Print(preview)
 
 		println(strings.Repeat("─", 100))
-		println("\033[2m← → 選擇主題  |  Enter 確認  |  q 取消\033[0m")
+		println("\033[2m< > Select theme  |  Enter Confirm  |  q Cancel\033[0m")
 	}
 
 	renderMenu()
 
-	// 讀取按鍵
+	// Read keypress
 	buf := make([]byte, 3)
 	for {
 		n, err := os.Stdin.Read(buf)
@@ -314,14 +314,14 @@ func runInteractiveMenu() {
 
 		if n == 1 {
 			switch buf[0] {
-			case 'q', 'Q', 27: // q 或 Escape
+			case 'q', 'Q', 27: // q or Escape
 				fmt.Print("\033[2J\033[H")
-				fmt.Print("已取消\r\n")
+				fmt.Print("Cancelled\r\n")
 				return
 			case 13, 10: // Enter
 				fmt.Print("\033[2J\033[H")
 				saveThemeConfig(themeList[selectedIndex].Name())
-				fmt.Printf("✓ 已設定主題為: %s\r\n", themeList[selectedIndex].Name())
+				fmt.Printf("Theme set to: %s\r\n", themeList[selectedIndex].Name())
 				return
 			case 'h', 'H': // vim-style left
 				if selectedIndex > 0 {
@@ -335,14 +335,14 @@ func runInteractiveMenu() {
 				}
 			}
 		} else if n == 3 && buf[0] == 27 && buf[1] == 91 {
-			// 方向鍵
+			// Arrow keys
 			switch buf[2] {
-			case 68: // 左
+			case 68: // Left
 				if selectedIndex > 0 {
 					selectedIndex--
 					renderMenu()
 				}
-			case 67: // 右
+			case 67: // Right
 				if selectedIndex < len(themeList)-1 {
 					selectedIndex++
 					renderMenu()
@@ -352,13 +352,13 @@ func runInteractiveMenu() {
 	}
 }
 
-// 終端機 raw mode 相關函式
+// Terminal raw mode functions
 func makeRaw(fd uintptr) ([]byte, error) {
-	// 使用 stty 設定 raw mode
+	// Use stty to set raw mode
 	cmd := exec.Command("stty", "-F", "/dev/stdin", "raw", "-echo")
 	cmd.Stdin = os.Stdin
 	if err := cmd.Run(); err != nil {
-		// macOS 使用不同語法
+		// macOS uses different syntax
 		cmd = exec.Command("stty", "raw", "-echo")
 		cmd.Stdin = os.Stdin
 		cmd.Run()
@@ -367,7 +367,7 @@ func makeRaw(fd uintptr) ([]byte, error) {
 }
 
 func restore(fd uintptr, oldState []byte) {
-	// 恢復終端機設定
+	// Restore terminal settings
 	cmd := exec.Command("stty", "-F", "/dev/stdin", "sane")
 	cmd.Stdin = os.Stdin
 	if err := cmd.Run(); err != nil {
@@ -378,16 +378,16 @@ func restore(fd uintptr, oldState []byte) {
 	}
 }
 
-// 預覽主題
+// previewThemeDemo previews a theme
 func previewThemeDemo(themeName string) {
 	theme, ok := themes.GetTheme(themeName)
 	if !ok {
-		fmt.Printf("錯誤：找不到主題 '%s'\n", themeName)
-		fmt.Println("使用 --list-themes 查看所有可用主題")
+		fmt.Printf("Error: theme '%s' not found\n", themeName)
+		fmt.Println("Use --list-themes to see all available themes")
 		return
 	}
 
-	// 建立測試資料
+	// Create test data
 	data := themes.StatusData{
 		ModelName:       "Opus 4.5",
 		ModelType:       "Opus",
@@ -414,19 +414,19 @@ func previewThemeDemo(themeName string) {
 		API7dayTimeLeft: "2d5h",
 	}
 
-	fmt.Printf("\n預覽主題：%s\n", themeName)
+	fmt.Printf("\nPreview theme: %s\n", themeName)
 	fmt.Println(strings.Repeat("─", 60))
 	fmt.Println()
 	fmt.Print(theme.Render(data))
 	fmt.Println()
 }
 
-// 儲存主題配置
+// saveThemeConfig saves theme configuration
 func saveThemeConfig(themeName string) {
-	// 檢查主題是否存在
+	// Check if theme exists
 	if _, ok := themes.GetTheme(themeName); !ok {
-		fmt.Printf("錯誤：找不到主題 '%s'\n", themeName)
-		fmt.Println("使用 --list-themes 查看所有可用主題")
+		fmt.Printf("Error: theme '%s' not found\n", themeName)
+		fmt.Println("Use --list-themes to see all available themes")
 		return
 	}
 
@@ -437,17 +437,17 @@ func saveThemeConfig(themeName string) {
 	data, _ := json.MarshalIndent(config, "", "  ")
 	os.WriteFile(configFile, data, 0644)
 
-	fmt.Printf("✓ 主題已設定為：%s\n", themeName)
+	fmt.Printf("Theme set to: %s\n", themeName)
 }
 
-// 載入主題配置
+// loadThemeConfig loads theme configuration
 func loadThemeConfig() string {
 	homeDir, _ := os.UserHomeDir()
 	configFile := filepath.Join(homeDir, ".claude", "statusline-go", "config.json")
 
 	data, err := os.ReadFile(configFile)
 	if err != nil {
-		return "classic_framed" // 預設主題
+		return "classic_framed" // Default theme
 	}
 
 	var config Config
@@ -462,7 +462,7 @@ func loadThemeConfig() string {
 	return config.Theme
 }
 
-// 收集所有資料
+// collectData collects all data
 func collectData(input Input, modelType string) themes.StatusData {
 	results := make(chan Result, 10)
 	var wg sync.WaitGroup
@@ -510,7 +510,7 @@ func collectData(input Input, modelType string) themes.StatusData {
 		close(results)
 	}()
 
-	// 收集結果
+	// Collect results
 	var (
 		gitInfo      GitInfo
 		totalHours   string
@@ -537,7 +537,7 @@ func collectData(input Input, modelType string) themes.StatusData {
 		}
 	}
 
-	// 計算 Context
+	// Calculate Context
 	contextUsed := 0
 	contextPercent := 0
 	if input.TranscriptPath != "" {
@@ -548,16 +548,16 @@ func collectData(input Input, modelType string) themes.StatusData {
 		}
 	}
 
-	// 取得月統計
+	// Get monthly stats
 	monthlyStats := getMonthlyStats()
 
-	// 計算燒錢速度
+	// Calculate burn rate
 	burnRate := calculateBurnRateValue(dailyStats)
 
-	// 取得版本和更新狀態
+	// Get version and update status
 	version, updateAvailable := getVersionInfo()
 
-	// API 資料
+	// API data
 	api5hrPercent := 0
 	api5hrTimeLeft := "--"
 	api7dayPercent := 0
@@ -570,7 +570,7 @@ func collectData(input Input, modelType string) themes.StatusData {
 		api7dayTimeLeft = formatTimeLeftShort(apiUsage.SevenDay.ResetsAt)
 	}
 
-	// 計算 cache hit rate
+	// Calculate cache hit rate
 	cacheHitRate := 0
 	totalInput := sessionUsage.InputTokens + sessionUsage.CacheReadTokens
 	if totalInput > 0 {
@@ -604,15 +604,15 @@ func collectData(input Input, modelType string) themes.StatusData {
 	}
 }
 
-// 取得版本資訊
+// getVersionInfo gets version information
 func getVersionInfo() (string, bool) {
-	// 嘗試執行 claude --version
+	// Try to execute claude --version
 	cmd := exec.Command("claude", "--version")
 	output, err := cmd.Output()
 	version := "v?.?.?"
 	if err == nil {
 		version = strings.TrimSpace(string(output))
-		// 移除多餘的前綴和後綴
+		// Remove extra prefix and suffix
 		version = strings.TrimPrefix(version, "claude ")
 		version = strings.TrimSuffix(version, " (Claude Code)")
 		if !strings.HasPrefix(version, "v") {
@@ -620,7 +620,7 @@ func getVersionInfo() (string, bool) {
 		}
 	}
 
-	// 檢查是否有更新（檢查檔案是否存在）
+	// Check if update available (check if file exists)
 	homeDir, _ := os.UserHomeDir()
 	updateFile := filepath.Join(homeDir, ".claude", ".update_available")
 	_, updateAvailable := os.Stat(updateFile)
@@ -628,7 +628,7 @@ func getVersionInfo() (string, bool) {
 	return version, updateAvailable == nil
 }
 
-// 格式化模型名稱
+// formatModelName formats model name
 func formatModelName(displayName string) string {
 	if strings.Contains(displayName, "Opus") {
 		return "Opus 4.5"
@@ -640,7 +640,7 @@ func formatModelName(displayName string) string {
 	return displayName
 }
 
-// 獲取模型類型
+// getModelType gets model type
 func getModelType(displayName string) string {
 	for key := range modelPricing {
 		if strings.Contains(displayName, key) {
@@ -650,7 +650,7 @@ func getModelType(displayName string) string {
 	return "Sonnet"
 }
 
-// 格式化專案路徑
+// formatProjectPath formats project path
 func formatProjectPath(fullPath string) string {
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
@@ -662,7 +662,7 @@ func formatProjectPath(fullPath string) string {
 	return fullPath
 }
 
-// 獲取 OAuth Token
+// getOAuthToken gets OAuth token
 func getOAuthToken() string {
 	homeDir, _ := os.UserHomeDir()
 	credFile := filepath.Join(homeDir, ".claude", ".credentials.json")
@@ -688,7 +688,7 @@ func getOAuthToken() string {
 	return creds.ClaudeAiOauth.AccessToken
 }
 
-// 獲取 API Usage
+// fetchAPIUsage fetches API usage
 func fetchAPIUsage() *APIUsage {
 	cacheMutex.RLock()
 	if apiUsageCache != nil && time.Now().Before(apiUsageExpires) {
@@ -741,7 +741,7 @@ func fetchAPIUsage() *APIUsage {
 	return &usage
 }
 
-// 獲取 Git 資訊
+// getGitInfo gets Git information
 func getGitInfo() GitInfo {
 	result := GitInfo{}
 
@@ -784,7 +784,7 @@ func getGitInfo() GitInfo {
 	return result
 }
 
-// 更新 Session
+// updateSession updates session
 func updateSession(sessionID string) {
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
@@ -843,7 +843,7 @@ func updateSession(sessionID string) {
 	}
 }
 
-// 計算總時數
+// calculateTotalHours calculates total hours
 func calculateTotalHours(currentSessionID string) string {
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
@@ -889,7 +889,7 @@ func calculateTotalHours(currentSessionID string) string {
 	return fmt.Sprintf("%dm", minutes)
 }
 
-// 計算 Session 用量
+// calculateSessionUsage calculates session usage
 func calculateSessionUsage(transcriptPath, sessionID, modelType string) SessionUsageResult {
 	result := SessionUsageResult{}
 
@@ -970,7 +970,7 @@ func calculateSessionUsage(transcriptPath, sessionID, modelType string) SessionU
 	return result
 }
 
-// 計算成本
+// calculateCost calculates cost
 func calculateCost(usage SessionUsageResult, modelType string) float64 {
 	pricing, ok := modelPricing[modelType]
 	if !ok {
@@ -985,7 +985,7 @@ func calculateCost(usage SessionUsageResult, modelType string) float64 {
 	return cost
 }
 
-// 計算 Context 使用量
+// calculateContextUsage calculates context usage
 func calculateContextUsage(transcriptPath string) int {
 	file, err := os.Open(transcriptPath)
 	if err != nil {
@@ -1051,7 +1051,7 @@ func calculateContextUsage(transcriptPath string) int {
 	return 0
 }
 
-// 獲取每日統計
+// getDailyStats gets daily stats
 func getDailyStats() UsageStats {
 	homeDir, _ := os.UserHomeDir()
 	statsDir := filepath.Join(homeDir, ".claude", "session-tracker", "stats")
@@ -1067,7 +1067,7 @@ func getDailyStats() UsageStats {
 	return stats
 }
 
-// 獲取每週統計
+// getWeeklyStats gets weekly stats
 func getWeeklyStats() UsageStats {
 	homeDir, _ := os.UserHomeDir()
 	statsDir := filepath.Join(homeDir, ".claude", "session-tracker", "stats")
@@ -1090,7 +1090,7 @@ func getWeeklyStats() UsageStats {
 	return stats
 }
 
-// 獲取月統計
+// getMonthlyStats gets monthly stats
 func getMonthlyStats() UsageStats {
 	homeDir, _ := os.UserHomeDir()
 	statsDir := filepath.Join(homeDir, ".claude", "session-tracker", "stats")
@@ -1106,7 +1106,7 @@ func getMonthlyStats() UsageStats {
 	return stats
 }
 
-// 更新每日統計
+// updateDailyStats updates daily stats
 func updateDailyStats(sessionID string, data themes.StatusData, modelType string) {
 	homeDir, _ := os.UserHomeDir()
 	statsDir := filepath.Join(homeDir, ".claude", "session-tracker", "stats")
@@ -1142,7 +1142,7 @@ func updateDailyStats(sessionID string, data themes.StatusData, modelType string
 	updateMonthlyStats(sessionID, data.SessionCost)
 }
 
-// 更新每週統計
+// updateWeeklyStats updates weekly stats
 func updateWeeklyStats(sessionID string, sessionCost float64) {
 	homeDir, _ := os.UserHomeDir()
 	statsDir := filepath.Join(homeDir, ".claude", "session-tracker", "stats")
@@ -1180,7 +1180,7 @@ func updateWeeklyStats(sessionID string, sessionCost float64) {
 	}
 }
 
-// 更新每月統計
+// updateMonthlyStats updates monthly stats
 func updateMonthlyStats(sessionID string, sessionCost float64) {
 	homeDir, _ := os.UserHomeDir()
 	statsDir := filepath.Join(homeDir, ".claude", "session-tracker", "stats")
@@ -1211,7 +1211,7 @@ func updateMonthlyStats(sessionID string, sessionCost float64) {
 	}
 }
 
-// 計算燒錢速度
+// calculateBurnRateValue calculates burn rate value
 func calculateBurnRateValue(dailyStats UsageStats) float64 {
 	homeDir, _ := os.UserHomeDir()
 	sessionsDir := filepath.Join(homeDir, ".claude", "session-tracker", "sessions")
@@ -1242,7 +1242,7 @@ func calculateBurnRateValue(dailyStats UsageStats) float64 {
 	return dailyStats.TotalCost / hours
 }
 
-// 格式化剩餘時間
+// formatTimeLeftShort formats time left in short form
 func formatTimeLeftShort(isoTime string) string {
 	t, err := time.Parse(time.RFC3339, isoTime)
 	if err != nil {

@@ -6,7 +6,7 @@ import (
 	"unicode"
 )
 
-// MUDRPGTheme MUD RPG 角色狀態風格
+// MUDRPGTheme MUD RPG character status style
 type MUDRPGTheme struct{}
 
 func init() {
@@ -18,7 +18,7 @@ func (t *MUDRPGTheme) Name() string {
 }
 
 func (t *MUDRPGTheme) Description() string {
-	return "MUD RPG：經典文字冒險遊戲角色狀態介面"
+	return "MUD RPG: classic text adventure game character status interface"
 }
 
 const (

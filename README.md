@@ -1,5 +1,7 @@
 # Claude Statusline
 
+[English](README.md) | [繁體中文](README.zh-TW.md) | [简体中文](README.zh-CN.md) | [日本語](README.ja.md)
+
 A custom status line for Claude Code written in Go. Displays model info, Git status, API usage, token consumption, cost metrics, and more.
 
 ## Installation

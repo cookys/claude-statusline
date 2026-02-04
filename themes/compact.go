@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-// CompactTheme C 版：精簡三行
+// CompactTheme compact three-line style
 type CompactTheme struct{}
 
 func init() {
@@ -17,20 +17,20 @@ func (t *CompactTheme) Name() string {
 }
 
 func (t *CompactTheme) Description() string {
-	return "精簡三行：最小高度，資訊完整"
+	return "Compact three-line: minimum height, complete information"
 }
 
 func (t *CompactTheme) Render(data StatusData) string {
 	var sb strings.Builder
 
-	// 模型 + 版本
+	// Model + Version
 	modelColor, modelIcon := GetModelConfig(data.ModelType)
 	update := ""
 	if data.UpdateAvailable {
 		update = fmt.Sprintf(" %s⬆%s", ColorNeonOrange, Reset)
 	}
 
-	// 第一行：模型 | 路徑 + Git | 時間
+	// Line 1: Model | Path + Git | Time
 	sb.WriteString(fmt.Sprintf(" %s%s%s%s %s%s%s%s",
 		modelColor, Bold, modelIcon, data.ModelName, Reset,
 		ColorNeonGreen, data.Version, Reset))
@@ -48,7 +48,7 @@ func (t *CompactTheme) Render(data StatusData) string {
 	}
 	sb.WriteString("\n")
 
-	// 第二行：Session 統計 | Cost
+	// Line 2: Session Stats | Cost
 	sb.WriteString(fmt.Sprintf(" %s%5s%s tok  %s%3d%s msg  %s%6s%s",
 		ColorPurple, FormatTokens(data.TokenCount), Reset,
 		ColorCyan, data.MessageCount, Reset,
@@ -62,7 +62,7 @@ func (t *CompactTheme) Render(data StatusData) string {
 		ColorGreen, data.CacheHitRate, Reset))
 	sb.WriteString("\n")
 
-	// 第三行：三個光棒
+	// Line 3: Three progress bars
 	color1, bg1 := GetBarColor(data.ContextPercent)
 	color5, bg5 := GetBarColor(data.API5hrPercent)
 	color7, bg7 := GetBarColor(data.API7dayPercent)

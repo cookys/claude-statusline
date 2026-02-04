@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-// TradeWarsTheme Trade Wars 2002 太空風格
+// TradeWarsTheme Trade Wars 2002 space style
 type TradeWarsTheme struct{}
 
 func init() {
@@ -17,7 +17,7 @@ func (t *TradeWarsTheme) Name() string {
 }
 
 func (t *TradeWarsTheme) Description() string {
-	return "Trade Wars：太空貿易遊戲，星艦控制台風格"
+	return "Trade Wars: space trading game, starship console style"
 }
 
 const (

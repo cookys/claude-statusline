@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-// HtopTheme htop 系統監視器風格
+// HtopTheme htop system monitor style
 type HtopTheme struct{}
 
 func init() {
@@ -17,7 +17,7 @@ func (t *HtopTheme) Name() string {
 }
 
 func (t *HtopTheme) Description() string {
-	return "htop：經典系統監視器，彩色進度條風格"
+	return "htop: classic system monitor, colorful progress bar style"
 }
 
 const (

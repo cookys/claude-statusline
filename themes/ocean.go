@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-// OceanTheme 海洋深海風格
+// OceanTheme ocean deep sea style
 type OceanTheme struct{}
 
 func init() {
@@ -17,7 +17,7 @@ func (t *OceanTheme) Name() string {
 }
 
 func (t *OceanTheme) Description() string {
-	return "深海：海洋波浪漸層，寧靜藍調"
+	return "Deep sea: ocean wave gradient, serene blue tones"
 }
 
 const (

@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-// BtopTheme btop++ 現代系統監視器風格
+// BtopTheme btop++ modern system monitor style
 type BtopTheme struct{}
 
 func init() {
@@ -17,7 +17,7 @@ func (t *BtopTheme) Name() string {
 }
 
 func (t *BtopTheme) Description() string {
-	return "btop：現代系統監視器，漸層色彩與圓角框風格"
+	return "btop: modern system monitor, gradient colors and rounded borders"
 }
 
 const (

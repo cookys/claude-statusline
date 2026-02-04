@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-// BoxedTheme B 版：框線整齊
+// BoxedTheme neat bordered style
 type BoxedTheme struct{}
 
 func init() {
@@ -17,7 +17,7 @@ func (t *BoxedTheme) Name() string {
 }
 
 func (t *BoxedTheme) Description() string {
-	return "框線整齊：完整框線包圍，左右對稱分區"
+	return "Neat bordered: complete border frame, symmetrical left/right sections"
 }
 
 func (t *BoxedTheme) Render(data StatusData) string {
@@ -27,7 +27,7 @@ func (t *BoxedTheme) Render(data StatusData) string {
 	const rightWidth = 43
 	const fullWidth = leftWidth + rightWidth + 1
 
-	// 頂部框線
+	// Top border
 	sb.WriteString(ColorFrame)
 	sb.WriteString(" ┌")
 	sb.WriteString(strings.Repeat("─", fullWidth))
@@ -35,7 +35,7 @@ func (t *BoxedTheme) Render(data StatusData) string {
 	sb.WriteString(Reset)
 	sb.WriteString("\n")
 
-	// 標題行：路徑 + Git + 模型
+	// Header line: Path + Git + Model
 	headerContent := t.formatHeader(data)
 	sb.WriteString(ColorFrame)
 	sb.WriteString(" │")
@@ -47,7 +47,7 @@ func (t *BoxedTheme) Render(data StatusData) string {
 	sb.WriteString(Reset)
 	sb.WriteString("\n")
 
-	// 分隔線
+	// Separator line
 	sb.WriteString(ColorFrame)
 	sb.WriteString(" ├")
 	sb.WriteString(strings.Repeat("─", leftWidth))
@@ -57,7 +57,7 @@ func (t *BoxedTheme) Render(data StatusData) string {
 	sb.WriteString(Reset)
 	sb.WriteString("\n")
 
-	// 第一行：Session 資訊 | Context bar
+	// Line 1: Session info | Context bar
 	leftContent := t.formatSessionInfo(data)
 	rightContent := t.formatContextBar(data)
 
@@ -76,7 +76,7 @@ func (t *BoxedTheme) Render(data StatusData) string {
 	sb.WriteString(Reset)
 	sb.WriteString("\n")
 
-	// 第二行：Cache | 5hr bar
+	// Line 2: Cache | 5hr bar
 	leftContent = t.formatCacheInfo(data)
 	rightContent = t.format5hrBar(data)
 
@@ -95,7 +95,7 @@ func (t *BoxedTheme) Render(data StatusData) string {
 	sb.WriteString(Reset)
 	sb.WriteString("\n")
 
-	// 第三行：Cost 1 | 7day bar
+	// Line 3: Cost 1 | 7day bar
 	leftContent = t.formatCostInfo1(data)
 	rightContent = t.format7dayBar(data)
 
@@ -114,7 +114,7 @@ func (t *BoxedTheme) Render(data StatusData) string {
 	sb.WriteString(Reset)
 	sb.WriteString("\n")
 
-	// 第四行：Cost 2 | 空白
+	// Line 4: Cost 2 | Empty
 	leftContent = t.formatCostInfo2(data)
 
 	sb.WriteString(ColorFrame)
@@ -131,7 +131,7 @@ func (t *BoxedTheme) Render(data StatusData) string {
 	sb.WriteString(Reset)
 	sb.WriteString("\n")
 
-	// 底部框線
+	// Bottom border
 	sb.WriteString(ColorFrame)
 	sb.WriteString(" └")
 	sb.WriteString(strings.Repeat("─", leftWidth))

@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-// ClassicFramedTheme D 版：經典樹狀+框線
+// ClassicFramedTheme classic tree-style with border frame
 type ClassicFramedTheme struct{}
 
 func init() {
@@ -17,18 +17,18 @@ func (t *ClassicFramedTheme) Name() string {
 }
 
 func (t *ClassicFramedTheme) Description() string {
-	return "經典樹狀+框線：左側文字資訊，右側光棒垂直對齊"
+	return "Classic tree-style with border frame: left-side text info, right-side progress bars vertically aligned"
 }
 
 func (t *ClassicFramedTheme) Render(data StatusData) string {
 	var sb strings.Builder
 
-	// 常數
+	// Constants
 	const leftWidth = 53
 	const rightWidth = 45
 	const fullWidth = leftWidth + rightWidth + 1 // +1 for middle border
 
-	// 框線字元
+	// Border characters
 	topLeft := "┌"
 	topRight := "┐"
 	topMid := "┬"
@@ -40,7 +40,7 @@ func (t *ClassicFramedTheme) Render(data StatusData) string {
 	hLine := "─"
 	vLine := "│"
 
-	// 第一行：路徑 + Git + 模型（橫跨整個寬度）
+	// Line 1: Path + Git + Model (spans full width)
 	headerContent := t.formatPathGitLine(data, fullWidth-2)
 	sb.WriteString(ColorFrame)
 	sb.WriteString(topLeft)
@@ -60,7 +60,7 @@ func (t *ClassicFramedTheme) Render(data StatusData) string {
 	sb.WriteString(Reset)
 	sb.WriteString("\n")
 
-	// 分隔線（開始左右分欄）
+	// Separator line (start left/right columns)
 	sb.WriteString(ColorFrame)
 	sb.WriteString(midLeft)
 	sb.WriteString(strings.Repeat(hLine, leftWidth))
@@ -70,7 +70,7 @@ func (t *ClassicFramedTheme) Render(data StatusData) string {
 	sb.WriteString(Reset)
 	sb.WriteString("\n")
 
-	// 第二行：Session | Context bar + Cache
+	// Line 2: Session | Context bar + Cache
 	leftContent := t.formatSessionLine(data)
 	rightContent := t.formatContextBar(data)
 
@@ -93,7 +93,7 @@ func (t *ClassicFramedTheme) Render(data StatusData) string {
 	sb.WriteString(Reset)
 	sb.WriteString("\n")
 
-	// 第三行：Cost 1 | 5hr bar
+	// Line 3: Cost 1 | 5hr bar
 	leftContent = t.formatCostLine1(data)
 	rightContent = t.format5hrBar(data)
 
@@ -116,7 +116,7 @@ func (t *ClassicFramedTheme) Render(data StatusData) string {
 	sb.WriteString(Reset)
 	sb.WriteString("\n")
 
-	// 第四行：Cost 2 | 7day bar
+	// Line 4: Cost 2 | 7day bar
 	leftContent = t.formatCostLine2(data)
 	rightContent = t.format7dayBar(data)
 
@@ -139,7 +139,7 @@ func (t *ClassicFramedTheme) Render(data StatusData) string {
 	sb.WriteString(Reset)
 	sb.WriteString("\n")
 
-	// 底部框線
+	// Bottom border
 	sb.WriteString(ColorFrame)
 	sb.WriteString(botLeft)
 	sb.WriteString(strings.Repeat(hLine, leftWidth))
@@ -168,7 +168,7 @@ func (t *ClassicFramedTheme) formatPathGitLine(data StatusData, width int) strin
 
 	left := path + git
 
-	// 右側：模型 + 版本
+	// Right side: Model + Version
 	modelColor, modelIcon := GetModelConfig(data.ModelType)
 	update := ""
 	if data.UpdateAvailable {
@@ -176,7 +176,7 @@ func (t *ClassicFramedTheme) formatPathGitLine(data StatusData, width int) strin
 	}
 	model := fmt.Sprintf("%s%s%s%s %s%s%s%s", modelColor, modelIcon, data.ModelName, Reset, ColorNeonGreen, data.Version, Reset, update)
 
-	// 計算填充
+	// Calculate padding
 	leftVisible := VisibleWidth(left)
 	modelVisible := VisibleWidth(model)
 	padding := width - leftVisible - modelVisible
@@ -188,7 +188,7 @@ func (t *ClassicFramedTheme) formatPathGitLine(data StatusData, width int) strin
 }
 
 func (t *ClassicFramedTheme) formatSessionLine(data StatusData) string {
-	// 使用 │ 分隔符讓數據更清晰，對齊下方 cost 欄位
+	// Use │ separator for clearer data display, aligned with cost fields below
 	return fmt.Sprintf("%s%5s%s tok %s│%s %s%5d%s msg %s│%s %s%7s%s",
 		ColorPurple, FormatTokens(data.TokenCount), Reset,
 		ColorTreeDim, Reset,

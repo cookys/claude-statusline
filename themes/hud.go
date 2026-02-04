@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-// HUDTheme 科幻 HUD 風格
+// HUDTheme sci-fi HUD style
 type HUDTheme struct{}
 
 func init() {
@@ -17,7 +17,7 @@ func (t *HUDTheme) Name() string {
 }
 
 func (t *HUDTheme) Description() string {
-	return "科幻 HUD：未來感介面，角括號標籤"
+	return "Sci-fi HUD: futuristic interface, angle bracket labels"
 }
 
 const (
@@ -30,12 +30,12 @@ const (
 func (t *HUDTheme) Render(data StatusData) string {
 	var sb strings.Builder
 
-	// 第一行：模型 + 版本 + 路徑 + Git + Cost
+	// Line 1: Model + Version + Path + Git + Cost
 	line1 := t.formatLine1(data)
 	sb.WriteString(line1)
 	sb.WriteString("\n")
 
-	// 第二行：所有光棒
+	// Line 2: All progress bars
 	line2 := t.formatLine2(data)
 	sb.WriteString(line2)
 	sb.WriteString("\n")

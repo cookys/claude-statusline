@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-// CyberpunkTheme 賽博朋克霓虹風格
+// CyberpunkTheme cyberpunk neon style
 type CyberpunkTheme struct{}
 
 func init() {
@@ -17,7 +17,7 @@ func (t *CyberpunkTheme) Name() string {
 }
 
 func (t *CyberpunkTheme) Description() string {
-	return "賽博朋克：霓虹雙色框線"
+	return "Cyberpunk: neon dual-color border frame"
 }
 
 const (
@@ -30,7 +30,7 @@ func (t *CyberpunkTheme) Render(data StatusData) string {
 
 	const width = 95
 
-	// 頂部框線
+	// Top border
 	sb.WriteString(CyberCyan)
 	sb.WriteString("╔")
 	sb.WriteString(strings.Repeat("═", width))
@@ -38,7 +38,7 @@ func (t *CyberpunkTheme) Render(data StatusData) string {
 	sb.WriteString(Reset)
 	sb.WriteString("\n")
 
-	// 第一行：模型 + 版本 | 路徑 + Git
+	// Line 1: Model + Version | Path + Git
 	modelColor, modelIcon := GetModelConfig(data.ModelType)
 	update := ""
 	if data.UpdateAvailable {
@@ -69,7 +69,7 @@ func (t *CyberpunkTheme) Render(data StatusData) string {
 	sb.WriteString(Reset)
 	sb.WriteString("\n")
 
-	// 分隔線
+	// Separator line
 	sb.WriteString(CyberMagenta)
 	sb.WriteString("╠")
 	sb.WriteString(strings.Repeat("═", width))
@@ -77,7 +77,7 @@ func (t *CyberpunkTheme) Render(data StatusData) string {
 	sb.WriteString(Reset)
 	sb.WriteString("\n")
 
-	// 第二行：Session 統計 | Cost
+	// Line 2: Session Stats | Cost
 	line2 := fmt.Sprintf(" %s%5s%s tok  %s%3d%s msg  %s%6s%s  %s│%s  %s%s%s ses  %s%s%s day  %s%s%s mon  %s%s/h%s  %s%d%%hit%s",
 		ColorPurple, FormatTokens(data.TokenCount), Reset,
 		ColorCyan, data.MessageCount, Reset,
@@ -98,7 +98,7 @@ func (t *CyberpunkTheme) Render(data StatusData) string {
 	sb.WriteString(Reset)
 	sb.WriteString("\n")
 
-	// 第三行：光棒
+	// Line 3: Progress bars
 	color1, bg1 := GetBarColor(data.ContextPercent)
 	color5, bg5 := GetBarColor(data.API5hrPercent)
 	color7, bg7 := GetBarColor(data.API7dayPercent)
@@ -127,7 +127,7 @@ func (t *CyberpunkTheme) Render(data StatusData) string {
 	sb.WriteString(Reset)
 	sb.WriteString("\n")
 
-	// 底部框線
+	// Bottom border
 	sb.WriteString(CyberMagenta)
 	sb.WriteString("╚")
 	sb.WriteString(strings.Repeat("═", width))

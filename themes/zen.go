@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-// ZenTheme 極簡禪風
+// ZenTheme minimalist zen style
 type ZenTheme struct{}
 
 func init() {
@@ -17,7 +17,7 @@ func (t *ZenTheme) Name() string {
 }
 
 func (t *ZenTheme) Description() string {
-	return "禪風：極簡留白，寧靜淡雅"
+	return "Zen style: minimalist whitespace, serene and elegant"
 }
 
 const (

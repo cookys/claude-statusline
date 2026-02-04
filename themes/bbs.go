@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-// BBSTheme 經典 BBS 佈告欄風格
+// BBSTheme classic BBS bulletin board style
 type BBSTheme struct{}
 
 func init() {
@@ -17,7 +17,7 @@ func (t *BBSTheme) Name() string {
 }
 
 func (t *BBSTheme) Description() string {
-	return "BBS：經典電子佈告欄 ANSI 藝術風格"
+	return "BBS: classic bulletin board ANSI art style"
 }
 
 const (
