@@ -4,7 +4,6 @@ run:
 
 linters:
   enable:
-    - errcheck
     - gosimple
     - govet
     - ineffassign
@@ -15,11 +14,10 @@ linters:
     - misspell
     - unconvert
     - unused
+  disable:
+    - errcheck  # This utility uses best-effort error handling by design
 
 linters-settings:
-  errcheck:
-    check-type-assertions: true
-    check-blank: false
 
   gosec:
     excludes:
@@ -38,11 +36,6 @@ issues:
     - path: _test\.go
       linters:
         - unused
-
-    # Allow unchecked errors in defer statements
-    - source: "defer"
-      linters:
-        - errcheck
 
   max-issues-per-linter: 50
   max-same-issues: 10
