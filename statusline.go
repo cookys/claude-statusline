@@ -15,7 +15,7 @@ import (
 	"sync"
 	"time"
 
-	"statusline/themes"
+	"github.com/kevinlincg/claude-statusline/themes"
 )
 
 // Version information (set via ldflags during build)
