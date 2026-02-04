@@ -7,9 +7,9 @@ import (
 
 // ANSI color definitions
 const (
-	Reset  = "\033[0m"
-	Bold   = "\033[1m"
-	Dim    = "\033[2m"
+	Reset = "\033[0m"
+	Bold  = "\033[1m"
+	Dim   = "\033[2m"
 
 	// Basic colors
 	ColorGold   = "\033[38;2;195;158;83m"
@@ -55,13 +55,13 @@ const (
 // StatusData contains all status data to display
 type StatusData struct {
 	// Model info
-	ModelName    string
-	ModelType    string // Opus, Sonnet, Haiku
-	ModelIcon    string
-	ModelColor   string
+	ModelName  string
+	ModelType  string // Opus, Sonnet, Haiku
+	ModelIcon  string
+	ModelColor string
 
 	// Version info
-	Version       string
+	Version         string
 	UpdateAvailable bool
 
 	// Workspace info

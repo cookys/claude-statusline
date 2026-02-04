@@ -21,10 +21,10 @@ func (t *HUDTheme) Description() string {
 }
 
 const (
-	HUDCyan      = "\033[38;2;0;200;200m"
+	HUDCyan       = "\033[38;2;0;200;200m"
 	HUDBrightCyan = "\033[38;2;0;255;255m"
-	HUDGreen     = "\033[38;2;0;255;180m"
-	HUDYellow    = "\033[38;2;255;220;0m"
+	HUDGreen      = "\033[38;2;0;255;180m"
+	HUDYellow     = "\033[38;2;255;220;0m"
 )
 
 func (t *HUDTheme) Render(data StatusData) string {

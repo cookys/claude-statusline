@@ -206,7 +206,7 @@ func (t *GtopTheme) generateSparkline(percent int) string {
 	// Generate a fake "history" based on current value with some variation
 	for i := 0; i < width; i++ {
 		// Create slight variation for visual interest
-		variation := (i * 7) % 15 - 7
+		variation := (i*7)%15 - 7
 		val := percent + variation
 		if val < 0 {
 			val = 0

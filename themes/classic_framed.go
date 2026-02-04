@@ -246,4 +246,3 @@ func (t *ClassicFramedTheme) format7dayBar(data StatusData) string {
 		Bold, color, data.API7dayPercent, Reset,
 		ColorDim, data.API7dayTimeLeft, Reset)
 }
-

@@ -21,11 +21,11 @@ func (t *RetroCRTTheme) Description() string {
 }
 
 const (
-	CRTGreen      = "\033[38;2;51;255;51m"
-	CRTDarkGreen  = "\033[38;2;0;180;0m"
-	CRTDimGreen   = "\033[38;2;0;100;0m"
-	CRTBrightGreen= "\033[38;2;180;255;180m"
-	CRTBgGlow     = "\033[48;2;0;40;0m"
+	CRTGreen       = "\033[38;2;51;255;51m"
+	CRTDarkGreen   = "\033[38;2;0;180;0m"
+	CRTDimGreen    = "\033[38;2;0;100;0m"
+	CRTBrightGreen = "\033[38;2;180;255;180m"
+	CRTBgGlow      = "\033[48;2;0;40;0m"
 )
 
 func (t *RetroCRTTheme) Render(data StatusData) string {

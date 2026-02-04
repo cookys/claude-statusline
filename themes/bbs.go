@@ -21,22 +21,22 @@ func (t *BBSTheme) Description() string {
 }
 
 const (
-	BBSBlue      = "\033[38;2;0;0;170m"
-	BBSBrightBlue= "\033[38;2;85;85;255m"
-	BBSCyan      = "\033[38;2;0;170;170m"
-	BBSBrightCyan= "\033[38;2;85;255;255m"
-	BBSWhite     = "\033[38;2;170;170;170m"
-	BBSBrightWhite = "\033[38;2;255;255;255m"
-	BBSYellow    = "\033[38;2;170;170;0m"
-	BBSBrightYellow = "\033[38;2;255;255;85m"
-	BBSRed       = "\033[38;2;170;0;0m"
-	BBSBrightRed = "\033[38;2;255;85;85m"
-	BBSGreen     = "\033[38;2;0;170;0m"
-	BBSBrightGreen = "\033[38;2;85;255;85m"
-	BBSMagenta   = "\033[38;2;170;0;170m"
+	BBSBlue          = "\033[38;2;0;0;170m"
+	BBSBrightBlue    = "\033[38;2;85;85;255m"
+	BBSCyan          = "\033[38;2;0;170;170m"
+	BBSBrightCyan    = "\033[38;2;85;255;255m"
+	BBSWhite         = "\033[38;2;170;170;170m"
+	BBSBrightWhite   = "\033[38;2;255;255;255m"
+	BBSYellow        = "\033[38;2;170;170;0m"
+	BBSBrightYellow  = "\033[38;2;255;255;85m"
+	BBSRed           = "\033[38;2;170;0;0m"
+	BBSBrightRed     = "\033[38;2;255;85;85m"
+	BBSGreen         = "\033[38;2;0;170;0m"
+	BBSBrightGreen   = "\033[38;2;85;255;85m"
+	BBSMagenta       = "\033[38;2;170;0;170m"
 	BBSBrightMagenta = "\033[38;2;255;85;255m"
-	BBSDark      = "\033[38;2;85;85;85m"
-	BBSBgBlue    = "\033[48;2;0;0;170m"
+	BBSDark          = "\033[38;2;85;85;85m"
+	BBSBgBlue        = "\033[48;2;0;0;170m"
 )
 
 func (t *BBSTheme) Render(data StatusData) string {

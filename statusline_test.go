@@ -117,8 +117,8 @@ func TestCalculateCost(t *testing.T) {
 				OutputTokens: 0,
 			},
 			modelType: "Sonnet",
-			minCost:   2.9,  // Slightly less than $3
-			maxCost:   3.1,  // Slightly more than $3
+			minCost:   2.9, // Slightly less than $3
+			maxCost:   3.1, // Slightly more than $3
 		},
 		{
 			name: "opus pricing",

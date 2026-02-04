@@ -21,12 +21,12 @@ func (t *ZenTheme) Description() string {
 }
 
 const (
-	ZenWhite    = "\033[38;2;240;240;240m"
-	ZenGray     = "\033[38;2;120;120;120m"
-	ZenDimGray  = "\033[38;2;80;80;80m"
-	ZenSoftGreen= "\033[38;2;144;180;148m"
-	ZenSoftGold = "\033[38;2;200;180;140m"
-	ZenSoftRed  = "\033[38;2;180;120;120m"
+	ZenWhite     = "\033[38;2;240;240;240m"
+	ZenGray      = "\033[38;2;120;120;120m"
+	ZenDimGray   = "\033[38;2;80;80;80m"
+	ZenSoftGreen = "\033[38;2;144;180;148m"
+	ZenSoftGold  = "\033[38;2;200;180;140m"
+	ZenSoftRed   = "\033[38;2;180;120;120m"
 )
 
 func (t *ZenTheme) Render(data StatusData) string {
