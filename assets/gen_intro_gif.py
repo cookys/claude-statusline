@@ -5,6 +5,7 @@ import sys
 from pathlib import Path
 from ansi2html import Ansi2HTMLConverter
 from playwright.sync_api import sync_playwright
+from PIL import Image
 import shutil
 
 PROJECT_DIR = Path(__file__).parent.parent
@@ -80,15 +81,23 @@ with sync_playwright() as p:
     browser.close()
 
 print("\nCreating GIF...")
-# Use ffmpeg to create GIF with 1.5 second per frame
-subprocess.run([
-    "ffmpeg", "-y",
-    "-framerate", "0.67",  # ~1.5 seconds per frame
-    "-i", str(FRAMES_DIR / "frame_%03d.png"),
-    "-vf", "split[s0][s1];[s0]palettegen=max_colors=256[p];[s1][p]paletteuse=dither=bayer",
-    "-loop", "0",
-    str(OUTPUT_GIF)
-], check=True, capture_output=True)
+# Load all frames
+frames = []
+for i in range(len(SHOWCASE_THEMES)):
+    frame_path = FRAMES_DIR / f"frame_{i:03d}.png"
+    img = Image.open(frame_path)
+    # Convert to palette mode for better GIF quality
+    img = img.convert('P', palette=Image.ADAPTIVE, colors=256)
+    frames.append(img)
+
+# Save as animated GIF (1500ms = 1.5 seconds per frame)
+frames[0].save(
+    OUTPUT_GIF,
+    save_all=True,
+    append_images=frames[1:],
+    duration=1500,  # milliseconds per frame
+    loop=0  # infinite loop
+)
 
 # Cleanup frames
 shutil.rmtree(FRAMES_DIR)
