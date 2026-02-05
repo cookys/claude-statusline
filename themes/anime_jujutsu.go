@@ -21,16 +21,16 @@ func (t *JujutsuTheme) Description() string {
 }
 
 const (
-	JJKPurple    = "\033[38;2;128;0;128m"
-	JJKBlue      = "\033[38;2;0;100;255m"
-	JJKRed       = "\033[38;2;200;0;0m"
-	JJKBlack     = "\033[38;2;20;20;20m"
-	JJKWhite     = "\033[38;2;240;240;240m"
-	JJKPink      = "\033[38;2;255;100;150m"
-	JJKCyan      = "\033[38;2;0;200;200m"
-	JJKGold      = "\033[38;2;255;200;0m"
-	JJKGray      = "\033[38;2;80;80;80m"
-	JJKDark      = "\033[38;2;40;20;60m"
+	JJKPurple = "\033[38;2;128;0;128m"
+	JJKBlue   = "\033[38;2;0;100;255m"
+	JJKRed    = "\033[38;2;200;0;0m"
+	JJKBlack  = "\033[38;2;20;20;20m"
+	JJKWhite  = "\033[38;2;240;240;240m"
+	JJKPink   = "\033[38;2;255;100;150m"
+	JJKCyan   = "\033[38;2;0;200;200m"
+	JJKGold   = "\033[38;2;255;200;0m"
+	JJKGray   = "\033[38;2;80;80;80m"
+	JJKDark   = "\033[38;2;40;20;60m"
 )
 
 func (t *JujutsuTheme) Render(data StatusData) string {

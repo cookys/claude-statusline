@@ -21,11 +21,11 @@ func (t *MahouTheme) Description() string {
 }
 
 const (
-	MHPink    = "\033[38;2;255;105;180m"
-	MHPurple  = "\033[38;2;186;85;211m"
-	MHYellow  = "\033[38;2;255;215;0m"
-	MHCyan    = "\033[38;2;0;255;255m"
-	MHWhite   = "\033[38;2;255;250;250m"
+	MHPink     = "\033[38;2;255;105;180m"
+	MHPurple   = "\033[38;2;186;85;211m"
+	MHYellow   = "\033[38;2;255;215;0m"
+	MHCyan     = "\033[38;2;0;255;255m"
+	MHWhite    = "\033[38;2;255;250;250m"
 	MHLavender = "\033[38;2;230;190;255m"
 )
 

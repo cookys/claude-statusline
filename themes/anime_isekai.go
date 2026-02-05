@@ -21,16 +21,16 @@ func (t *IsekaiTheme) Description() string {
 }
 
 const (
-	IsekaiGold       = "\033[38;2;255;215;0m"
-	IsekaiBlue       = "\033[38;2;100;149;237m"
-	IsekaiGreen      = "\033[38;2;50;205;50m"
-	IsekaiRed        = "\033[38;2;220;20;60m"
-	IsekaiPurple     = "\033[38;2;148;0;211m"
-	IsekaiWhite      = "\033[38;2;255;255;255m"
-	IsekaiDark       = "\033[38;2;64;64;64m"
-	IsekaiCyan       = "\033[38;2;0;255;255m"
-	IsekaiBrown      = "\033[38;2;139;69;19m"
-	IsekaiBgBlue     = "\033[48;2;20;30;60m"
+	IsekaiGold   = "\033[38;2;255;215;0m"
+	IsekaiBlue   = "\033[38;2;100;149;237m"
+	IsekaiGreen  = "\033[38;2;50;205;50m"
+	IsekaiRed    = "\033[38;2;220;20;60m"
+	IsekaiPurple = "\033[38;2;148;0;211m"
+	IsekaiWhite  = "\033[38;2;255;255;255m"
+	IsekaiDark   = "\033[38;2;64;64;64m"
+	IsekaiCyan   = "\033[38;2;0;255;255m"
+	IsekaiBrown  = "\033[38;2;139;69;19m"
+	IsekaiBgBlue = "\033[48;2;20;30;60m"
 )
 
 func (t *IsekaiTheme) Render(data StatusData) string {

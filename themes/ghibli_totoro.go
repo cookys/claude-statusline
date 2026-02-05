@@ -21,14 +21,14 @@ func (t *TotoroTheme) Description() string {
 }
 
 const (
-	TotoroGreen      = "\033[38;2;144;238;144m"
-	TotoroDarkGreen  = "\033[38;2;34;139;34m"
-	TotoroBrown      = "\033[38;2;139;90;43m"
-	TotoroSky        = "\033[38;2;135;206;235m"
-	TotoroCream      = "\033[38;2;255;253;208m"
-	TotoroGray       = "\033[38;2;128;128;128m"
-	TotoroYellow     = "\033[38;2;255;255;150m"
-	TotoroWhite      = "\033[38;2;255;255;255m"
+	TotoroGreen     = "\033[38;2;144;238;144m"
+	TotoroDarkGreen = "\033[38;2;34;139;34m"
+	TotoroBrown     = "\033[38;2;139;90;43m"
+	TotoroSky       = "\033[38;2;135;206;235m"
+	TotoroCream     = "\033[38;2;255;253;208m"
+	TotoroGray      = "\033[38;2;128;128;128m"
+	TotoroYellow    = "\033[38;2;255;255;150m"
+	TotoroWhite     = "\033[38;2;255;255;255m"
 )
 
 func (t *TotoroTheme) Render(data StatusData) string {

@@ -21,15 +21,15 @@ func (t *HxHTheme) Description() string {
 }
 
 const (
-	HxHGreen   = "\033[38;2;0;200;100m"
-	HxHBlue    = "\033[38;2;50;150;255m"
-	HxHYellow  = "\033[38;2;255;220;0m"
-	HxHRed     = "\033[38;2;255;50;50m"
-	HxHPurple  = "\033[38;2;180;0;255m"
-	HxHOrange  = "\033[38;2;255;165;0m"
-	HxHWhite   = "\033[38;2;240;240;240m"
-	HxHGray    = "\033[38;2;100;100;100m"
-	HxHDark    = "\033[38;2;50;50;50m"
+	HxHGreen  = "\033[38;2;0;200;100m"
+	HxHBlue   = "\033[38;2;50;150;255m"
+	HxHYellow = "\033[38;2;255;220;0m"
+	HxHRed    = "\033[38;2;255;50;50m"
+	HxHPurple = "\033[38;2;180;0;255m"
+	HxHOrange = "\033[38;2;255;165;0m"
+	HxHWhite  = "\033[38;2;240;240;240m"
+	HxHGray   = "\033[38;2;100;100;100m"
+	HxHDark   = "\033[38;2;50;50;50m"
 )
 
 func (t *HxHTheme) Render(data StatusData) string {

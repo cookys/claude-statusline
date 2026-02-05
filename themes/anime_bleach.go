@@ -21,15 +21,15 @@ func (t *BleachTheme) Description() string {
 }
 
 const (
-	BleachWhite    = "\033[38;2;255;255;255m"
-	BleachBlack    = "\033[38;2;20;20;20m"
-	BleachBlue     = "\033[38;2;0;150;255m"
-	BleachRed      = "\033[38;2;200;0;0m"
-	BleachPurple   = "\033[38;2;128;0;128m"
-	BleachGold     = "\033[38;2;255;215;0m"
-	BleachGray     = "\033[38;2;100;100;100m"
-	BleachCyan     = "\033[38;2;0;200;200m"
-	BleachBgBlack  = "\033[48;2;10;10;10m"
+	BleachWhite   = "\033[38;2;255;255;255m"
+	BleachBlack   = "\033[38;2;20;20;20m"
+	BleachBlue    = "\033[38;2;0;150;255m"
+	BleachRed     = "\033[38;2;200;0;0m"
+	BleachPurple  = "\033[38;2;128;0;128m"
+	BleachGold    = "\033[38;2;255;215;0m"
+	BleachGray    = "\033[38;2;100;100;100m"
+	BleachCyan    = "\033[38;2;0;200;200m"
+	BleachBgBlack = "\033[48;2;10;10;10m"
 )
 
 func (t *BleachTheme) Render(data StatusData) string {

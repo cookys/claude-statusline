@@ -21,14 +21,14 @@ func (t *AOTTheme) Description() string {
 }
 
 const (
-	AOTGreen     = "\033[38;2;0;100;0m"
-	AOTBrown     = "\033[38;2;101;67;33m"
-	AOTWhite     = "\033[38;2;230;230;230m"
-	AOTRed       = "\033[38;2;139;0;0m"
-	AOTBlue      = "\033[38;2;70;130;180m"
-	AOTGold      = "\033[38;2;184;134;11m"
-	AOTGray      = "\033[38;2;105;105;105m"
-	AOTDark      = "\033[38;2;50;50;50m"
+	AOTGreen = "\033[38;2;0;100;0m"
+	AOTBrown = "\033[38;2;101;67;33m"
+	AOTWhite = "\033[38;2;230;230;230m"
+	AOTRed   = "\033[38;2;139;0;0m"
+	AOTBlue  = "\033[38;2;70;130;180m"
+	AOTGold  = "\033[38;2;184;134;11m"
+	AOTGray  = "\033[38;2;105;105;105m"
+	AOTDark  = "\033[38;2;50;50;50m"
 )
 
 func (t *AOTTheme) Render(data StatusData) string {

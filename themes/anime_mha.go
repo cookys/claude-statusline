@@ -21,14 +21,14 @@ func (t *MHATheme) Description() string {
 }
 
 const (
-	MHAGreen   = "\033[38;2;0;180;0m"
-	MHARed     = "\033[38;2;220;20;60m"
-	MHABlue    = "\033[38;2;30;144;255m"
-	MHAYellow  = "\033[38;2;255;215;0m"
-	MHAOrange  = "\033[38;2;255;140;0m"
-	MHAWhite   = "\033[38;2;255;255;255m"
-	MHAGray    = "\033[38;2;100;100;100m"
-	MHADark    = "\033[38;2;40;40;40m"
+	MHAGreen  = "\033[38;2;0;180;0m"
+	MHARed    = "\033[38;2;220;20;60m"
+	MHABlue   = "\033[38;2;30;144;255m"
+	MHAYellow = "\033[38;2;255;215;0m"
+	MHAOrange = "\033[38;2;255;140;0m"
+	MHAWhite  = "\033[38;2;255;255;255m"
+	MHAGray   = "\033[38;2;100;100;100m"
+	MHADark   = "\033[38;2;40;40;40m"
 )
 
 func (t *MHATheme) Render(data StatusData) string {

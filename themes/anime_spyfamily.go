@@ -21,13 +21,13 @@ func (t *SpyFamilyTheme) Description() string {
 }
 
 const (
-	SPYBlack  = "\033[38;2;30;30;30m"
-	SPYRed    = "\033[38;2;200;50;70m"
-	SPYPink   = "\033[38;2;255;182;193m"
-	SPYGold   = "\033[38;2;218;165;32m"
-	SPYGreen  = "\033[38;2;100;180;100m"
-	SPYWhite  = "\033[38;2;245;245;245m"
-	SPYGray   = "\033[38;2;128;128;128m"
+	SPYBlack = "\033[38;2;30;30;30m"
+	SPYRed   = "\033[38;2;200;50;70m"
+	SPYPink  = "\033[38;2;255;182;193m"
+	SPYGold  = "\033[38;2;218;165;32m"
+	SPYGreen = "\033[38;2;100;180;100m"
+	SPYWhite = "\033[38;2;245;245;245m"
+	SPYGray  = "\033[38;2;128;128;128m"
 )
 
 func (t *SpyFamilyTheme) Render(data StatusData) string {

@@ -21,13 +21,13 @@ func (t *FMATheme) Description() string {
 }
 
 const (
-	FMAGold    = "\033[38;2;218;165;32m"
-	FMARed     = "\033[38;2;180;0;0m"
-	FMABlue    = "\033[38;2;70;130;180m"
-	FMAWhite   = "\033[38;2;240;240;240m"
-	FMAGray    = "\033[38;2;120;120;120m"
-	FMADark    = "\033[38;2;50;50;50m"
-	FMAPurple  = "\033[38;2;128;0;128m"
+	FMAGold   = "\033[38;2;218;165;32m"
+	FMARed    = "\033[38;2;180;0;0m"
+	FMABlue   = "\033[38;2;70;130;180m"
+	FMAWhite  = "\033[38;2;240;240;240m"
+	FMAGray   = "\033[38;2;120;120;120m"
+	FMADark   = "\033[38;2;50;50;50m"
+	FMAPurple = "\033[38;2;128;0;128m"
 )
 
 func (t *FMATheme) Render(data StatusData) string {

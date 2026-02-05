@@ -21,13 +21,13 @@ func (t *VisualNovelTheme) Description() string {
 }
 
 const (
-	VNBlue    = "\033[38;2;100;150;200m"
-	VNPink    = "\033[38;2;255;182;193m"
-	VNPurple  = "\033[38;2;180;150;200m"
-	VNGold    = "\033[38;2;255;215;150m"
-	VNWhite   = "\033[38;2;255;255;255m"
-	VNGray    = "\033[38;2;150;150;150m"
-	VNDark    = "\033[38;2;40;50;60m"
+	VNBlue   = "\033[38;2;100;150;200m"
+	VNPink   = "\033[38;2;255;182;193m"
+	VNPurple = "\033[38;2;180;150;200m"
+	VNGold   = "\033[38;2;255;215;150m"
+	VNWhite  = "\033[38;2;255;255;255m"
+	VNGray   = "\033[38;2;150;150;150m"
+	VNDark   = "\033[38;2;40;50;60m"
 )
 
 func (t *VisualNovelTheme) Render(data StatusData) string {

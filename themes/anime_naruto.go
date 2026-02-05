@@ -21,15 +21,15 @@ func (t *NarutoTheme) Description() string {
 }
 
 const (
-	NarutoOrange    = "\033[38;2;255;140;0m"
-	NarutoBlue      = "\033[38;2;65;105;225m"
-	NarutoRed       = "\033[38;2;178;34;34m"
-	NarutoGreen     = "\033[38;2;0;128;0m"
-	NarutoCream     = "\033[38;2;255;248;220m"
-	NarutoBrown     = "\033[38;2;139;90;43m"
-	NarutoPurple    = "\033[38;2;148;0;211m"
-	NarutoYellow    = "\033[38;2;255;215;0m"
-	NarutoDark      = "\033[38;2;60;60;60m"
+	NarutoOrange = "\033[38;2;255;140;0m"
+	NarutoBlue   = "\033[38;2;65;105;225m"
+	NarutoRed    = "\033[38;2;178;34;34m"
+	NarutoGreen  = "\033[38;2;0;128;0m"
+	NarutoCream  = "\033[38;2;255;248;220m"
+	NarutoBrown  = "\033[38;2;139;90;43m"
+	NarutoPurple = "\033[38;2;148;0;211m"
+	NarutoYellow = "\033[38;2;255;215;0m"
+	NarutoDark   = "\033[38;2;60;60;60m"
 )
 
 func (t *NarutoTheme) Render(data StatusData) string {

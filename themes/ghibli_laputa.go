@@ -21,13 +21,13 @@ func (t *LaputaTheme) Description() string {
 }
 
 const (
-	LPBlue    = "\033[38;2;100;149;237m"
-	LPCyan    = "\033[38;2;0;200;200m"
-	LPGreen   = "\033[38;2;144;238;144m"
-	LPGold    = "\033[38;2;218;165;32m"
-	LPWhite   = "\033[38;2;240;248;255m"
-	LPGray    = "\033[38;2;119;136;153m"
-	LPDark    = "\033[38;2;47;79;79m"
+	LPBlue  = "\033[38;2;100;149;237m"
+	LPCyan  = "\033[38;2;0;200;200m"
+	LPGreen = "\033[38;2;144;238;144m"
+	LPGold  = "\033[38;2;218;165;32m"
+	LPWhite = "\033[38;2;240;248;255m"
+	LPGray  = "\033[38;2;119;136;153m"
+	LPDark  = "\033[38;2;47;79;79m"
 )
 
 func (t *LaputaTheme) Render(data StatusData) string {

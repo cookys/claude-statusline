@@ -21,16 +21,16 @@ func (t *DemonSlayerTheme) Description() string {
 }
 
 const (
-	DSRed        = "\033[38;2;220;20;60m"
-	DSBlue       = "\033[38;2;30;144;255m"
-	DSYellow     = "\033[38;2;255;215;0m"
-	DSGreen      = "\033[38;2;50;205;50m"
-	DSPink       = "\033[38;2;255;182;193m"
-	DSPurple     = "\033[38;2;148;0;211m"
-	DSOrange     = "\033[38;2;255;140;0m"
-	DSWhite      = "\033[38;2;255;255;255m"
-	DSDark       = "\033[38;2;40;40;40m"
-	DSGray       = "\033[38;2;100;100;100m"
+	DSRed    = "\033[38;2;220;20;60m"
+	DSBlue   = "\033[38;2;30;144;255m"
+	DSYellow = "\033[38;2;255;215;0m"
+	DSGreen  = "\033[38;2;50;205;50m"
+	DSPink   = "\033[38;2;255;182;193m"
+	DSPurple = "\033[38;2;148;0;211m"
+	DSOrange = "\033[38;2;255;140;0m"
+	DSWhite  = "\033[38;2;255;255;255m"
+	DSDark   = "\033[38;2;40;40;40m"
+	DSGray   = "\033[38;2;100;100;100m"
 )
 
 func (t *DemonSlayerTheme) Render(data StatusData) string {

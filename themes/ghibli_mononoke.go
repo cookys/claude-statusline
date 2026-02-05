@@ -21,13 +21,13 @@ func (t *MononokeTheme) Description() string {
 }
 
 const (
-	MNKGreen  = "\033[38;2;34;139;34m"
-	MNKRed    = "\033[38;2;139;0;0m"
-	MNKBrown  = "\033[38;2;139;90;43m"
-	MNKWhite  = "\033[38;2;240;240;240m"
-	MNKBlue   = "\033[38;2;70;130;180m"
-	MNKGray   = "\033[38;2;100;100;100m"
-	MNKDark   = "\033[38;2;30;40;30m"
+	MNKGreen = "\033[38;2;34;139;34m"
+	MNKRed   = "\033[38;2;139;0;0m"
+	MNKBrown = "\033[38;2;139;90;43m"
+	MNKWhite = "\033[38;2;240;240;240m"
+	MNKBlue  = "\033[38;2;70;130;180m"
+	MNKGray  = "\033[38;2;100;100;100m"
+	MNKDark  = "\033[38;2;30;40;30m"
 )
 
 func (t *MononokeTheme) Render(data StatusData) string {

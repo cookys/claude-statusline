@@ -21,14 +21,14 @@ func (t *HowlTheme) Description() string {
 }
 
 const (
-	HowlCopper  = "\033[38;2;184;115;51m"
-	HowlGold    = "\033[38;2;255;215;0m"
-	HowlOrange  = "\033[38;2;255;140;0m"
-	HowlBlue    = "\033[38;2;135;206;250m"
-	HowlPurple  = "\033[38;2;147;112;219m"
-	HowlWhite   = "\033[38;2;255;250;240m"
-	HowlGray    = "\033[38;2;120;120;120m"
-	HowlDark    = "\033[38;2;60;40;30m"
+	HowlCopper = "\033[38;2;184;115;51m"
+	HowlGold   = "\033[38;2;255;215;0m"
+	HowlOrange = "\033[38;2;255;140;0m"
+	HowlBlue   = "\033[38;2;135;206;250m"
+	HowlPurple = "\033[38;2;147;112;219m"
+	HowlWhite  = "\033[38;2;255;250;240m"
+	HowlGray   = "\033[38;2;120;120;120m"
+	HowlDark   = "\033[38;2;60;40;30m"
 )
 
 func (t *HowlTheme) Render(data StatusData) string {

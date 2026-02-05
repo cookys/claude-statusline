@@ -21,13 +21,13 @@ func (t *ChainsawTheme) Description() string {
 }
 
 const (
-	CSMRed     = "\033[38;2;180;30;30m"
-	CSMOrange  = "\033[38;2;255;100;50m"
-	CSMYellow  = "\033[38;2;255;200;50m"
-	CSMBlack   = "\033[38;2;20;20;20m"
-	CSMWhite   = "\033[38;2;240;240;240m"
-	CSMGray    = "\033[38;2;100;100;100m"
-	CSMBlood   = "\033[38;2;139;0;0m"
+	CSMRed    = "\033[38;2;180;30;30m"
+	CSMOrange = "\033[38;2;255;100;50m"
+	CSMYellow = "\033[38;2;255;200;50m"
+	CSMBlack  = "\033[38;2;20;20;20m"
+	CSMWhite  = "\033[38;2;240;240;240m"
+	CSMGray   = "\033[38;2;100;100;100m"
+	CSMBlood  = "\033[38;2;139;0;0m"
 )
 
 func (t *ChainsawTheme) Render(data StatusData) string {
