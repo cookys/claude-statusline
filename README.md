@@ -12,6 +12,10 @@
 
 A custom status line for Claude Code written in Go. Displays model info, Git status, API usage, token consumption, cost metrics, and more.
 
+<p align="center">
+  <img src="assets/intro.gif" alt="Claude Statusline Theme Demo" width="750">
+</p>
+
 ## Installation
 
 ### Option 1: Download Binary (Recommended)
@@ -94,33 +98,140 @@ Edit `~/.claude/statusline-go/config.json`:
 
 ### Available Themes
 
-| Theme | Description |
-|-------|-------------|
-| `classic` | Original layout style |
-| `classic_framed` | Tree structure with frame, aligned progress bars |
-| `minimal` | Clean tree structure, no borders |
-| `compact` | Minimal height, complete info |
-| `boxed` | Full border frame, symmetrical sections |
-| `zen` | Minimalist whitespace, calm and elegant |
-| `hud` | Sci-fi HUD interface with angle bracket labels |
-| `cyberpunk` | Neon dual-color borders |
-| `synthwave` | Neon sunset gradient, 80s retro-future |
-| `matrix` | Green terminal hacker style |
-| `glitch` | Digital distortion, cyberpunk broken aesthetic |
-| `ocean` | Deep sea wave gradient, calm blue tones |
-| `pixel` | 8-bit retro game, block characters |
-| `retro_crt` | Green phosphor screen, scanline effect |
-| `steampunk` | Victorian brass gears, industrial aesthetic |
-| `htop` | Classic system monitor, colorful progress bars |
-| `btop` | Modern system monitor, gradient colors and rounded frames |
-| `gtop` | Minimal system monitor, sparklines and clean layout |
-| `stui` | CPU stress test monitor, frequency/temperature style |
-| `bbs` | Classic BBS ANSI art style |
-| `lord` | Legend of the Red Dragon BBS text game style |
-| `tradewars` | Trade Wars space trading game, starship console |
-| `nethack` | Classic Roguelike dungeon exploration style |
-| `dungeon` | Stone walls with torch lighting, dark adventure atmosphere |
-| `mud_rpg` | Classic MUD text adventure character status interface |
+#### Classic & Minimal
+
+<details>
+<summary><b>classic</b> - Original layout style</summary>
+<img src="assets/themes/classic.png" alt="classic theme">
+</details>
+
+<details>
+<summary><b>classic_framed</b> - Tree structure with frame, aligned progress bars (Default)</summary>
+<img src="assets/themes/classic_framed.png" alt="classic_framed theme">
+</details>
+
+<details>
+<summary><b>minimal</b> - Clean tree structure, no borders</summary>
+<img src="assets/themes/minimal.png" alt="minimal theme">
+</details>
+
+<details>
+<summary><b>compact</b> - Minimal height, complete info</summary>
+<img src="assets/themes/compact.png" alt="compact theme">
+</details>
+
+<details>
+<summary><b>boxed</b> - Full border frame, symmetrical sections</summary>
+<img src="assets/themes/boxed.png" alt="boxed theme">
+</details>
+
+<details>
+<summary><b>zen</b> - Minimalist whitespace, calm and elegant</summary>
+<img src="assets/themes/zen.png" alt="zen theme">
+</details>
+
+#### Sci-Fi & Cyberpunk
+
+<details>
+<summary><b>hud</b> - Sci-fi HUD interface with angle bracket labels</summary>
+<img src="assets/themes/hud.png" alt="hud theme">
+</details>
+
+<details>
+<summary><b>cyberpunk</b> - Neon dual-color borders</summary>
+<img src="assets/themes/cyberpunk.png" alt="cyberpunk theme">
+</details>
+
+<details>
+<summary><b>synthwave</b> - Neon sunset gradient, 80s retro-future</summary>
+<img src="assets/themes/synthwave.png" alt="synthwave theme">
+</details>
+
+<details>
+<summary><b>matrix</b> - Green terminal hacker style</summary>
+<img src="assets/themes/matrix.png" alt="matrix theme">
+</details>
+
+<details>
+<summary><b>glitch</b> - Digital distortion, cyberpunk broken aesthetic</summary>
+<img src="assets/themes/glitch.png" alt="glitch theme">
+</details>
+
+#### Nature & Aesthetic
+
+<details>
+<summary><b>ocean</b> - Deep sea wave gradient, calm blue tones</summary>
+<img src="assets/themes/ocean.png" alt="ocean theme">
+</details>
+
+<details>
+<summary><b>steampunk</b> - Victorian brass gears, industrial aesthetic</summary>
+<img src="assets/themes/steampunk.png" alt="steampunk theme">
+</details>
+
+#### System Monitor Style
+
+<details>
+<summary><b>htop</b> - Classic system monitor, colorful progress bars</summary>
+<img src="assets/themes/htop.png" alt="htop theme">
+</details>
+
+<details>
+<summary><b>btop</b> - Modern system monitor, gradient colors and rounded frames</summary>
+<img src="assets/themes/btop.png" alt="btop theme">
+</details>
+
+<details>
+<summary><b>gtop</b> - Minimal system monitor, sparklines and clean layout</summary>
+<img src="assets/themes/gtop.png" alt="gtop theme">
+</details>
+
+<details>
+<summary><b>stui</b> - CPU stress test monitor, frequency/temperature style</summary>
+<img src="assets/themes/stui.png" alt="stui theme">
+</details>
+
+#### Retro & Gaming
+
+<details>
+<summary><b>pixel</b> - 8-bit retro game, block characters</summary>
+<img src="assets/themes/pixel.png" alt="pixel theme">
+</details>
+
+<details>
+<summary><b>retro_crt</b> - Green phosphor screen, scanline effect</summary>
+<img src="assets/themes/retro_crt.png" alt="retro_crt theme">
+</details>
+
+<details>
+<summary><b>bbs</b> - Classic BBS ANSI art style</summary>
+<img src="assets/themes/bbs.png" alt="bbs theme">
+</details>
+
+<details>
+<summary><b>lord</b> - Legend of the Red Dragon BBS text game style</summary>
+<img src="assets/themes/lord.png" alt="lord theme">
+</details>
+
+<details>
+<summary><b>tradewars</b> - Trade Wars space trading game, starship console</summary>
+<img src="assets/themes/tradewars.png" alt="tradewars theme">
+</details>
+
+<details>
+<summary><b>nethack</b> - Classic Roguelike dungeon exploration style</summary>
+<img src="assets/themes/nethack.png" alt="nethack theme">
+</details>
+
+<details>
+<summary><b>dungeon</b> - Stone walls with torch lighting, dark adventure atmosphere</summary>
+<img src="assets/themes/dungeon.png" alt="dungeon theme">
+</details>
+
+<details>
+<summary><b>mud_rpg</b> - Classic MUD text adventure character status interface</summary>
+<img src="assets/themes/mud_rpg.png" alt="mud_rpg theme">
+</details>
 
 ## Display Information
 
