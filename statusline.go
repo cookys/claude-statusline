@@ -241,7 +241,7 @@ func runInteractiveMenu() {
 
 	// 測試資料
 	testData := themes.StatusData{
-		ModelName:       "Opus 4.5",
+		ModelName:       "Opus 4.6",
 		ModelType:       "Opus",
 		Version:         "v1.0.75",
 		UpdateAvailable: true,
@@ -389,7 +389,7 @@ func previewThemeDemo(themeName string) {
 
 	// 建立測試資料
 	data := themes.StatusData{
-		ModelName:       "Opus 4.5",
+		ModelName:       "Opus 4.6",
 		ModelType:       "Opus",
 		Version:         "v1.0.75",
 		UpdateAvailable: true,
@@ -628,14 +628,12 @@ func getVersionInfo() (string, bool) {
 	return version, updateAvailable == nil
 }
 
-// 格式化模型名稱
+// 格式化模型名稱 - 從 display_name 提取實際模型名稱
 func formatModelName(displayName string) string {
-	if strings.Contains(displayName, "Opus") {
-		return "Opus 4.5"
-	} else if strings.Contains(displayName, "Sonnet") {
-		return "Sonnet 4"
-	} else if strings.Contains(displayName, "Haiku") {
-		return "Haiku 3.5"
+	// 移除 "Claude " 前綴，只保留模型名稱和版本
+	name := strings.TrimPrefix(displayName, "Claude ")
+	if name != "" {
+		return name
 	}
 	return displayName
 }
