@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-// GlitchTheme 數位故障風格
+// GlitchTheme digital glitch style
 type GlitchTheme struct{}
 
 func init() {
@@ -17,7 +17,7 @@ func (t *GlitchTheme) Name() string {
 }
 
 func (t *GlitchTheme) Description() string {
-	return "故障風：數位錯位，賽博龐克破碎美學"
+	return "Glitch style: digital displacement, cyberpunk fragmented aesthetic"
 }
 
 const (

@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-// RetroCRTTheme 復古 CRT 顯示器風格
+// RetroCRTTheme retro CRT monitor style
 type RetroCRTTheme struct{}
 
 func init() {
@@ -17,15 +17,15 @@ func (t *RetroCRTTheme) Name() string {
 }
 
 func (t *RetroCRTTheme) Description() string {
-	return "復古 CRT：綠色磷光螢幕，掃描線效果"
+	return "Retro CRT: green phosphor screen, scanline effect"
 }
 
 const (
-	CRTGreen      = "\033[38;2;51;255;51m"
-	CRTDarkGreen  = "\033[38;2;0;180;0m"
-	CRTDimGreen   = "\033[38;2;0;100;0m"
-	CRTBrightGreen= "\033[38;2;180;255;180m"
-	CRTBgGlow     = "\033[48;2;0;40;0m"
+	CRTGreen       = "\033[38;2;51;255;51m"
+	CRTDarkGreen   = "\033[38;2;0;180;0m"
+	CRTDimGreen    = "\033[38;2;0;100;0m"
+	CRTBrightGreen = "\033[38;2;180;255;180m"
+	CRTBgGlow      = "\033[48;2;0;40;0m"
 )
 
 func (t *RetroCRTTheme) Render(data StatusData) string {

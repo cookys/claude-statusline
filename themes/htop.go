@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-// HtopTheme htop 系統監視器風格
+// HtopTheme htop system monitor style
 type HtopTheme struct{}
 
 func init() {
@@ -17,18 +17,18 @@ func (t *HtopTheme) Name() string {
 }
 
 func (t *HtopTheme) Description() string {
-	return "htop：經典系統監視器，彩色進度條風格"
+	return "htop: classic system monitor, colorful progress bar style"
 }
 
 const (
-	HtopBlack   = "\033[38;2;0;0;0m"
-	HtopRed     = "\033[38;2;205;0;0m"
-	HtopGreen   = "\033[38;2;0;205;0m"
-	HtopYellow  = "\033[38;2;205;205;0m"
-	HtopBlue    = "\033[38;2;0;0;238m"
-	HtopMagenta = "\033[38;2;205;0;205m"
-	HtopCyan    = "\033[38;2;0;205;205m"
-	HtopWhite   = "\033[38;2;229;229;229m"
+	HtopBlack        = "\033[38;2;0;0;0m"
+	HtopRed          = "\033[38;2;205;0;0m"
+	HtopGreen        = "\033[38;2;0;205;0m"
+	HtopYellow       = "\033[38;2;205;205;0m"
+	HtopBlue         = "\033[38;2;0;0;238m"
+	HtopMagenta      = "\033[38;2;205;0;205m"
+	HtopCyan         = "\033[38;2;0;205;205m"
+	HtopWhite        = "\033[38;2;229;229;229m"
 	HtopBrightBlack  = "\033[38;2;127;127;127m"
 	HtopBrightRed    = "\033[38;2;255;0;0m"
 	HtopBrightGreen  = "\033[38;2;0;255;0m"

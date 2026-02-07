@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-// ZenTheme 極簡禪風
+// ZenTheme minimalist zen style
 type ZenTheme struct{}
 
 func init() {
@@ -17,16 +17,16 @@ func (t *ZenTheme) Name() string {
 }
 
 func (t *ZenTheme) Description() string {
-	return "禪風：極簡留白，寧靜淡雅"
+	return "Zen style: minimalist whitespace, serene and elegant"
 }
 
 const (
-	ZenWhite    = "\033[38;2;240;240;240m"
-	ZenGray     = "\033[38;2;120;120;120m"
-	ZenDimGray  = "\033[38;2;80;80;80m"
-	ZenSoftGreen= "\033[38;2;144;180;148m"
-	ZenSoftGold = "\033[38;2;200;180;140m"
-	ZenSoftRed  = "\033[38;2;180;120;120m"
+	ZenWhite     = "\033[38;2;240;240;240m"
+	ZenGray      = "\033[38;2;120;120;120m"
+	ZenDimGray   = "\033[38;2;80;80;80m"
+	ZenSoftGreen = "\033[38;2;144;180;148m"
+	ZenSoftGold  = "\033[38;2;200;180;140m"
+	ZenSoftRed   = "\033[38;2;180;120;120m"
 )
 
 func (t *ZenTheme) Render(data StatusData) string {

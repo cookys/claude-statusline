@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-// ClassicTheme 原版經典風格
+// ClassicTheme original classic style
 type ClassicTheme struct{}
 
 func init() {
@@ -17,7 +17,7 @@ func (t *ClassicTheme) Name() string {
 }
 
 func (t *ClassicTheme) Description() string {
-	return "原版經典：保持原有 statusline 的佈局風格"
+	return "Original classic: maintains the original statusline layout style"
 }
 
 func (t *ClassicTheme) Render(data StatusData) string {
@@ -26,7 +26,7 @@ func (t *ClassicTheme) Render(data StatusData) string {
 	const tableWidth = 88
 	const colWidth = 35
 
-	// 第一行：路徑 + Git（左）+ 模型（右對齊到表格寬度）
+	// Line 1: Path + Git (left) + Model (right-aligned to table width)
 	leftPart := t.formatPathGit(data)
 	modelPart := t.formatModelShort(data)
 	leftTargetWidth := tableWidth - 13
@@ -36,7 +36,7 @@ func (t *ClassicTheme) Render(data StatusData) string {
 	sb.WriteString(Reset)
 	sb.WriteString("\n")
 
-	// 第二行：成本
+	// Line 2: Cost
 	sessCost := fmt.Sprintf("ses %s%s%s", ColorGreen, FormatCost(data.SessionCost), Reset)
 	dayCost := fmt.Sprintf("day %s%s%s", ColorGold, FormatCost(data.DayCost), Reset)
 	monCost := fmt.Sprintf("mon %s%s%s", ColorPurple, FormatCost(data.MonthCost), Reset)
@@ -49,7 +49,7 @@ func (t *ClassicTheme) Render(data StatusData) string {
 	sb.WriteString(fmt.Sprintf("%s├─ %-9s │ %s│ %s│%s\n",
 		ColorDim, "Cost", PadRight(costCol1, colWidth), PadRight(costCol2, colWidth), Reset))
 
-	// 第三行：統計 + Context bar
+	// Line 3: Stats + Context bar
 	tokenStr := fmt.Sprintf("tok %s%s%s", ColorPurple, FormatTokensFixed(data.TokenCount, 6), Reset)
 	msgStr := fmt.Sprintf("msg %s%4d%s", ColorCyan, data.MessageCount, Reset)
 	timeStr := fmt.Sprintf("time %s", data.SessionTime)
@@ -60,7 +60,7 @@ func (t *ClassicTheme) Render(data StatusData) string {
 	sb.WriteString(fmt.Sprintf("%s├─ %-9s │ %s│ %s│%s\n",
 		ColorDim, "Stats", PadRight(statsCol1, colWidth), PadRight(statsCol2, colWidth), Reset))
 
-	// 第四行：API 限制
+	// Line 4: API Limits
 	api5hr := t.formatAPILimit(data.API5hrPercent, data.API5hrTimeLeft, "5hr")
 	api7day := t.formatAPILimit(data.API7dayPercent, data.API7dayTimeLeft, "7day")
 

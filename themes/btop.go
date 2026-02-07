@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-// BtopTheme btop++ 現代系統監視器風格
+// BtopTheme btop++ modern system monitor style
 type BtopTheme struct{}
 
 func init() {
@@ -17,29 +17,29 @@ func (t *BtopTheme) Name() string {
 }
 
 func (t *BtopTheme) Description() string {
-	return "btop：現代系統監視器，漸層色彩與圓角框風格"
+	return "btop: modern system monitor, gradient colors and rounded borders"
 }
 
 const (
 	// btop uses a modern color scheme with gradients
-	BtopBg        = "\033[48;2;16;16;32m"
-	BtopFg        = "\033[38;2;200;200;220m"
-	BtopDim       = "\033[38;2;80;80;100m"
-	BtopBorder    = "\033[38;2;100;100;140m"
-	BtopTitle     = "\033[38;2;180;180;220m"
-	BtopCyan      = "\033[38;2;0;220;220m"
-	BtopMagenta   = "\033[38;2;220;80;220m"
-	BtopPink      = "\033[38;2;255;100;150m"
-	BtopPurple    = "\033[38;2;160;100;220m"
-	BtopBlue      = "\033[38;2;80;140;255m"
-	BtopGreen     = "\033[38;2;80;220;120m"
-	BtopYellow    = "\033[38;2;255;220;80m"
-	BtopOrange    = "\033[38;2;255;150;50m"
-	BtopRed       = "\033[38;2;255;80;100m"
-	BtopWhite     = "\033[38;2;240;240;255m"
-	BtopGrad1     = "\033[38;2;80;200;255m"  // cyan
-	BtopGrad2     = "\033[38;2;150;120;255m" // purple
-	BtopGrad3     = "\033[38;2;255;100;200m" // pink
+	BtopBg      = "\033[48;2;16;16;32m"
+	BtopFg      = "\033[38;2;200;200;220m"
+	BtopDim     = "\033[38;2;80;80;100m"
+	BtopBorder  = "\033[38;2;100;100;140m"
+	BtopTitle   = "\033[38;2;180;180;220m"
+	BtopCyan    = "\033[38;2;0;220;220m"
+	BtopMagenta = "\033[38;2;220;80;220m"
+	BtopPink    = "\033[38;2;255;100;150m"
+	BtopPurple  = "\033[38;2;160;100;220m"
+	BtopBlue    = "\033[38;2;80;140;255m"
+	BtopGreen   = "\033[38;2;80;220;120m"
+	BtopYellow  = "\033[38;2;255;220;80m"
+	BtopOrange  = "\033[38;2;255;150;50m"
+	BtopRed     = "\033[38;2;255;80;100m"
+	BtopWhite   = "\033[38;2;240;240;255m"
+	BtopGrad1   = "\033[38;2;80;200;255m"  // cyan
+	BtopGrad2   = "\033[38;2;150;120;255m" // purple
+	BtopGrad3   = "\033[38;2;255;100;200m" // pink
 )
 
 func (t *BtopTheme) Render(data StatusData) string {

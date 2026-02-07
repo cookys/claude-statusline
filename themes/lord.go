@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-// LORDTheme Legend of the Red Dragon 風格
+// LORDTheme Legend of the Red Dragon style
 type LORDTheme struct{}
 
 func init() {
@@ -17,25 +17,25 @@ func (t *LORDTheme) Name() string {
 }
 
 func (t *LORDTheme) Description() string {
-	return "LORD：紅龍傳說 BBS 經典文字遊戲風格"
+	return "LORD: Legend of the Red Dragon BBS classic text game style"
 }
 
 const (
-	LORDRed      = "\033[38;2;170;0;0m"
-	LORDBrightRed= "\033[38;2;255;85;85m"
-	LORDGreen    = "\033[38;2;0;170;0m"
-	LORDBrightGreen = "\033[38;2;85;255;85m"
-	LORDYellow   = "\033[38;2;170;170;0m"
-	LORDBrightYellow = "\033[38;2;255;255;85m"
-	LORDBlue     = "\033[38;2;0;0;170m"
-	LORDBrightBlue = "\033[38;2;85;85;255m"
-	LORDMagenta  = "\033[38;2;170;0;170m"
+	LORDRed           = "\033[38;2;170;0;0m"
+	LORDBrightRed     = "\033[38;2;255;85;85m"
+	LORDGreen         = "\033[38;2;0;170;0m"
+	LORDBrightGreen   = "\033[38;2;85;255;85m"
+	LORDYellow        = "\033[38;2;170;170;0m"
+	LORDBrightYellow  = "\033[38;2;255;255;85m"
+	LORDBlue          = "\033[38;2;0;0;170m"
+	LORDBrightBlue    = "\033[38;2;85;85;255m"
+	LORDMagenta       = "\033[38;2;170;0;170m"
 	LORDBrightMagenta = "\033[38;2;255;85;255m"
-	LORDCyan     = "\033[38;2;0;170;170m"
-	LORDBrightCyan = "\033[38;2;85;255;255m"
-	LORDWhite    = "\033[38;2;170;170;170m"
-	LORDBrightWhite = "\033[38;2;255;255;255m"
-	LORDDark     = "\033[38;2;85;85;85m"
+	LORDCyan          = "\033[38;2;0;170;170m"
+	LORDBrightCyan    = "\033[38;2;85;255;255m"
+	LORDWhite         = "\033[38;2;170;170;170m"
+	LORDBrightWhite   = "\033[38;2;255;255;255m"
+	LORDDark          = "\033[38;2;85;85;85m"
 )
 
 func (t *LORDTheme) Render(data StatusData) string {

@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-// PixelTheme 8-bit 像素遊戲風格
+// PixelTheme 8-bit pixel game style
 type PixelTheme struct{}
 
 func init() {
@@ -17,7 +17,7 @@ func (t *PixelTheme) Name() string {
 }
 
 func (t *PixelTheme) Description() string {
-	return "像素風：8-bit 復古遊戲，方塊字符"
+	return "Pixel style: 8-bit retro game, block characters"
 }
 
 const (

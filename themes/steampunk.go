@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-// SteampunkTheme 蒸汽龐克風格
+// SteampunkTheme steampunk style
 type SteampunkTheme struct{}
 
 func init() {
@@ -17,7 +17,7 @@ func (t *SteampunkTheme) Name() string {
 }
 
 func (t *SteampunkTheme) Description() string {
-	return "蒸汽龐克：維多利亞黃銅齒輪，工業美學"
+	return "Steampunk: Victorian brass gears, industrial aesthetic"
 }
 
 const (

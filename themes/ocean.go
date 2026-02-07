@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-// OceanTheme 海洋深海風格
+// OceanTheme ocean deep sea style
 type OceanTheme struct{}
 
 func init() {
@@ -17,21 +17,21 @@ func (t *OceanTheme) Name() string {
 }
 
 func (t *OceanTheme) Description() string {
-	return "深海：海洋波浪漸層，寧靜藍調"
+	return "Deep sea: ocean wave gradient, serene blue tones"
 }
 
 const (
-	OceanDeep    = "\033[38;2;0;40;80m"
-	OceanMid     = "\033[38;2;0;80;140m"
-	OceanLight   = "\033[38;2;0;150;200m"
-	OceanSurf    = "\033[38;2;100;200;255m"
-	OceanFoam    = "\033[38;2;200;240;255m"
-	OceanSand    = "\033[38;2;240;220;180m"
-	OceanCoral   = "\033[38;2;255;127;80m"
-	OceanGreen   = "\033[38;2;32;178;170m"
-	OceanGold    = "\033[38;2;255;215;0m"
-	OceanDim     = "\033[38;2;60;80;100m"
-	OceanBgDeep  = "\033[48;2;0;30;60m"
+	OceanDeep   = "\033[38;2;0;40;80m"
+	OceanMid    = "\033[38;2;0;80;140m"
+	OceanLight  = "\033[38;2;0;150;200m"
+	OceanSurf   = "\033[38;2;100;200;255m"
+	OceanFoam   = "\033[38;2;200;240;255m"
+	OceanSand   = "\033[38;2;240;220;180m"
+	OceanCoral  = "\033[38;2;255;127;80m"
+	OceanGreen  = "\033[38;2;32;178;170m"
+	OceanGold   = "\033[38;2;255;215;0m"
+	OceanDim    = "\033[38;2;60;80;100m"
+	OceanBgDeep = "\033[48;2;0;30;60m"
 )
 
 func (t *OceanTheme) Render(data StatusData) string {

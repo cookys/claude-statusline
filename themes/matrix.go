@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-// MatrixTheme 矩陣駭客風格
+// MatrixTheme matrix hacker style
 type MatrixTheme struct{}
 
 func init() {
@@ -17,7 +17,7 @@ func (t *MatrixTheme) Name() string {
 }
 
 func (t *MatrixTheme) Description() string {
-	return "矩陣駭客：綠色終端機風格"
+	return "Matrix hacker: green terminal style"
 }
 
 const (
@@ -31,7 +31,7 @@ func (t *MatrixTheme) Render(data StatusData) string {
 
 	const width = 95
 
-	// 頂部邊框
+	// Top border
 	sb.WriteString(MatrixGreen)
 	sb.WriteString("░▒▓")
 	sb.WriteString(strings.Repeat("█", width-4))
@@ -39,7 +39,7 @@ func (t *MatrixTheme) Render(data StatusData) string {
 	sb.WriteString(Reset)
 	sb.WriteString("\n")
 
-	// 第一行：模型 + 版本 | 路徑 + Git
+	// Line 1: Model + Version | Path + Git
 	modelColor, modelIcon := GetModelConfig(data.ModelType)
 	update := ""
 	if data.UpdateAvailable {
@@ -71,7 +71,7 @@ func (t *MatrixTheme) Render(data StatusData) string {
 	sb.WriteString(Reset)
 	sb.WriteString("\n")
 
-	// 第二行：Session 統計 | Cost
+	// Line 2: Session Stats | Cost
 	line2 := fmt.Sprintf(" %s$>%s %s%5s%s tok  %s%3d%s msg  %s%6s%s  %s│%s  %s%s%s ses  %s%s%s day  %s%s/h%s  %s%d%%hit%s",
 		MatrixDarkGreen, Reset,
 		ColorPurple, FormatTokens(data.TokenCount), Reset,
@@ -92,7 +92,7 @@ func (t *MatrixTheme) Render(data StatusData) string {
 	sb.WriteString(Reset)
 	sb.WriteString("\n")
 
-	// 第三行：光棒
+	// Line 3: Progress bars
 	color1, _ := GetBarColor(data.ContextPercent)
 	color5, _ := GetBarColor(data.API5hrPercent)
 	color7, _ := GetBarColor(data.API7dayPercent)
@@ -122,7 +122,7 @@ func (t *MatrixTheme) Render(data StatusData) string {
 	sb.WriteString(Reset)
 	sb.WriteString("\n")
 
-	// 底部邊框
+	// Bottom border
 	sb.WriteString(MatrixGreen)
 	sb.WriteString("░▒▓")
 	sb.WriteString(strings.Repeat("█", width-4))
