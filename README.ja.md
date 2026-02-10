@@ -88,7 +88,7 @@ go build -o statusline .
 
 ### 手動設定
 
-`~/.claude/statusline-go/config.json` を編集：
+`statusline` バイナリと同じディレクトリの `config.json` を編集：
 
 ```json
 {
@@ -98,11 +98,12 @@ go build -o statusline .
 
 ### 利用可能なテーマ
 
-**65種類のテーマ**が利用可能：
+**69種類のテーマ**が利用可能：
 
 | カテゴリ | テーマ |
 |----------|--------|
 | クラシック & ミニマル | `classic`, `classic_framed`, `minimal`, `compact`, `boxed`, `zen` |
+| ワンライン & ピル | `oneline_clean`, `oneline_pills`, `oneline_powerline`, `twoline_pills` |
 | SF & サイバーパンク | `hud`, `cyberpunk`, `synthwave`, `matrix`, `glitch` |
 | 自然 & 美学 | `ocean`, `steampunk` |
 | システムモニター | `htop`, `btop`, `gtop`, `stui` |

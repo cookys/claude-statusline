@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"github.com/kevinlincg/claude-statusline/themes"
+	"golang.org/x/term"
 )
 
 // Version information (set via ldflags during build)
@@ -366,28 +367,13 @@ func runInteractiveMenu() {
 }
 
 // Terminal raw mode functions
-func makeRaw(fd uintptr) ([]byte, error) {
-	// Use stty to set raw mode
-	cmd := exec.Command("stty", "-F", "/dev/stdin", "raw", "-echo")
-	cmd.Stdin = os.Stdin
-	if err := cmd.Run(); err != nil {
-		// macOS uses different syntax
-		cmd = exec.Command("stty", "raw", "-echo")
-		cmd.Stdin = os.Stdin
-		cmd.Run()
-	}
-	return nil, nil
+func makeRaw(fd uintptr) (*term.State, error) {
+	return term.MakeRaw(int(fd))
 }
 
-func restore(fd uintptr, oldState []byte) {
-	// Restore terminal settings
-	cmd := exec.Command("stty", "-F", "/dev/stdin", "sane")
-	cmd.Stdin = os.Stdin
-	if err := cmd.Run(); err != nil {
-		// macOS
-		cmd = exec.Command("stty", "sane")
-		cmd.Stdin = os.Stdin
-		cmd.Run()
+func restore(fd uintptr, oldState *term.State) {
+	if oldState != nil {
+		term.Restore(int(fd), oldState)
 	}
 }
 
@@ -474,18 +460,37 @@ func loadThemeConfig() string {
 	return config.Theme
 }
 
-// getConfigPath returns the config file path next to the binary
+// getConfigPath returns the config file path
+// Priority: XDG config dir > binary-adjacent (migration fallback)
 func getConfigPath() string {
-	exe, err := os.Executable()
-	if err == nil {
-		exe, err = filepath.EvalSymlinks(exe)
+	// 1. XDG / ~/.config location
+	configDir := os.Getenv("XDG_CONFIG_HOME")
+	if configDir == "" {
+		homeDir, err := os.UserHomeDir()
+		if err == nil {
+			configDir = filepath.Join(homeDir, ".config")
+		}
 	}
-	if err == nil {
-		return filepath.Join(filepath.Dir(exe), "config.json")
+	if configDir != "" {
+		xdgPath := filepath.Join(configDir, "claude-statusline", "config.json")
+		if _, err := os.Stat(xdgPath); err == nil {
+			return xdgPath
+		}
+		// Check binary-adjacent for migration
+		exe, err := os.Executable()
+		if err == nil {
+			exe, _ = filepath.EvalSymlinks(exe)
+			adjPath := filepath.Join(filepath.Dir(exe), "config.json")
+			if _, err := os.Stat(adjPath); err == nil {
+				return adjPath
+			}
+		}
+		// Default to XDG path (will be created on first save)
+		return xdgPath
 	}
-	// Fallback
+	// Ultimate fallback
 	homeDir, _ := os.UserHomeDir()
-	return filepath.Join(homeDir, ".claude", "claude-statusline", "config.json")
+	return filepath.Join(homeDir, ".config", "claude-statusline", "config.json")
 }
 
 // collectData collects all data

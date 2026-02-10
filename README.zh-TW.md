@@ -88,7 +88,7 @@ go build -o statusline .
 
 ### 手動設定
 
-編輯 `~/.claude/statusline-go/config.json`：
+編輯 statusline 執行檔旁的 `config.json`：
 
 ```json
 {
@@ -98,11 +98,12 @@ go build -o statusline .
 
 ### 可用主題
 
-目前提供 **65 種主題**：
+目前提供 **69 種主題**：
 
 | 分類 | 主題 |
 |------|------|
 | 經典 & 簡約 | `classic`, `classic_framed`, `minimal`, `compact`, `boxed`, `zen` |
+| 單行 & 膠囊 | `oneline_clean`, `oneline_pills`, `oneline_powerline`, `twoline_pills` |
 | 科幻 & 賽博龐克 | `hud`, `cyberpunk`, `synthwave`, `matrix`, `glitch` |
 | 自然 & 美學 | `ocean`, `steampunk` |
 | 系統監視器 | `htop`, `btop`, `gtop`, `stui` |

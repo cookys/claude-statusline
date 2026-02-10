@@ -88,7 +88,7 @@ Use arrow keys (or h/l) to browse themes, Enter to confirm, q to cancel.
 
 ### Manual Configuration
 
-Edit `~/.claude/statusline-go/config.json`:
+Edit the `config.json` file located next to the `statusline` binary:
 
 ```json
 {
@@ -98,11 +98,12 @@ Edit `~/.claude/statusline-go/config.json`:
 
 ### Available Themes
 
-**65 themes** across multiple categories:
+**69 themes** across multiple categories:
 
 | Category | Themes |
 |----------|--------|
 | Classic & Minimal | `classic`, `classic_framed`, `minimal`, `compact`, `boxed`, `zen` |
+| One-line & Pills | `oneline_clean`, `oneline_pills`, `oneline_powerline`, `twoline_pills` |
 | Sci-Fi & Cyberpunk | `hud`, `cyberpunk`, `synthwave`, `matrix`, `glitch` |
 | Nature & Aesthetic | `ocean`, `steampunk` |
 | System Monitor | `htop`, `btop`, `gtop`, `stui` |
