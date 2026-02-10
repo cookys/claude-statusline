@@ -443,8 +443,8 @@ func saveThemeConfig(themeName string) {
 		return
 	}
 
-	homeDir, _ := os.UserHomeDir()
-	configFile := filepath.Join(homeDir, ".claude", "statusline-go", "config.json")
+	configFile := getConfigPath()
+	os.MkdirAll(filepath.Dir(configFile), 0755)
 
 	config := Config{Theme: themeName}
 	data, _ := json.MarshalIndent(config, "", "  ")
@@ -455,8 +455,7 @@ func saveThemeConfig(themeName string) {
 
 // loadThemeConfig loads theme configuration
 func loadThemeConfig() string {
-	homeDir, _ := os.UserHomeDir()
-	configFile := filepath.Join(homeDir, ".claude", "statusline-go", "config.json")
+	configFile := getConfigPath()
 
 	data, err := os.ReadFile(configFile)
 	if err != nil {
@@ -473,6 +472,20 @@ func loadThemeConfig() string {
 	}
 
 	return config.Theme
+}
+
+// getConfigPath returns the config file path next to the binary
+func getConfigPath() string {
+	exe, err := os.Executable()
+	if err == nil {
+		exe, err = filepath.EvalSymlinks(exe)
+	}
+	if err == nil {
+		return filepath.Join(filepath.Dir(exe), "config.json")
+	}
+	// Fallback
+	homeDir, _ := os.UserHomeDir()
+	return filepath.Join(homeDir, ".claude", "claude-statusline", "config.json")
 }
 
 // collectData collects all data
