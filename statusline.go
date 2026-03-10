@@ -11,6 +11,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"sort"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -717,7 +718,9 @@ func getOAuthToken() string {
 	return creds.ClaudeAiOauth.AccessToken
 }
 
-// fetchAPIUsage fetches API usage
+// fetchAPIUsage fetches API usage via Haiku probe.
+// Sends a minimal request to the Messages API and reads rate limit info from response headers,
+// avoiding the /api/oauth/usage endpoint which is persistently rate-limited (429).
 func fetchAPIUsage() *APIUsage {
 	cacheMutex.RLock()
 	if apiUsageCache != nil && time.Now().Before(apiUsageExpires) {
@@ -732,39 +735,51 @@ func fetchAPIUsage() *APIUsage {
 		return nil
 	}
 
-	client := &http.Client{Timeout: 3 * time.Second}
-	req, err := http.NewRequest("GET", "https://api.anthropic.com/api/oauth/usage", nil)
+	client := &http.Client{Timeout: 5 * time.Second}
+	body := `{"model":"claude-haiku-4-5-20251001","max_tokens":1,"messages":[{"role":"user","content":"hi"}]}`
+	req, err := http.NewRequest("POST", "https://api.anthropic.com/v1/messages", strings.NewReader(body))
 	if err != nil {
 		return nil
 	}
 
 	req.Header.Set("Authorization", "Bearer "+token)
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("anthropic-beta", "oauth-2025-04-20")
+	req.Header.Set("anthropic-version", "2023-06-01")
 
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil
 	}
 	defer resp.Body.Close()
+	io.Copy(io.Discard, resp.Body)
 
-	if resp.StatusCode != 200 {
-		return nil
+	// Parse rate limit headers
+	usage := APIUsage{}
+	if v := resp.Header.Get("anthropic-ratelimit-unified-5h-utilization"); v != "" {
+		if f, err := strconv.ParseFloat(v, 64); err == nil {
+			usage.FiveHour.Utilization = f * 100 // header is 0.0-1.0, convert to percent
+		}
+	}
+	if v := resp.Header.Get("anthropic-ratelimit-unified-5h-reset"); v != "" {
+		usage.FiveHour.ResetsAt = v
+	}
+	if v := resp.Header.Get("anthropic-ratelimit-unified-7d-utilization"); v != "" {
+		if f, err := strconv.ParseFloat(v, 64); err == nil {
+			usage.SevenDay.Utilization = f * 100
+		}
+	}
+	if v := resp.Header.Get("anthropic-ratelimit-unified-7d-reset"); v != "" {
+		usage.SevenDay.ResetsAt = v
 	}
 
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil
-	}
-
-	var usage APIUsage
-	if err := json.Unmarshal(body, &usage); err != nil {
+	// Only cache if we got meaningful data
+	if usage.FiveHour.ResetsAt == "" && usage.SevenDay.ResetsAt == "" {
 		return nil
 	}
 
 	cacheMutex.Lock()
 	apiUsageCache = &usage
-	apiUsageExpires = time.Now().Add(30 * time.Second)
+	apiUsageExpires = time.Now().Add(5 * time.Minute)
 	cacheMutex.Unlock()
 
 	return &usage
