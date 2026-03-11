@@ -1299,9 +1299,14 @@ func calculateBurnRateValue(dailyStats UsageStats) float64 {
 }
 
 // formatTimeLeftShort formats time left in short form
-func formatTimeLeftShort(isoTime string) string {
-	t, err := time.Parse(time.RFC3339, isoTime)
-	if err != nil {
+func formatTimeLeftShort(timeStr string) string {
+	var t time.Time
+	// Try Unix epoch seconds first (from rate limit headers), then ISO 8601 (from usage API)
+	if epoch, err := strconv.ParseInt(timeStr, 10, 64); err == nil {
+		t = time.Unix(epoch, 0)
+	} else if parsed, err := time.Parse(time.RFC3339, timeStr); err == nil {
+		t = parsed
+	} else {
 		return "?"
 	}
 
