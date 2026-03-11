@@ -68,7 +68,8 @@ type Input struct {
 
 // Config structure
 type Config struct {
-	Theme string `json:"theme"`
+	Theme    string `json:"theme"`
+	UsageAPI string `json:"usage_api,omitempty"` // "haiku_probe" (default) or "oauth_usage"
 }
 
 // Session data structure
@@ -432,31 +433,32 @@ func saveThemeConfig(themeName string) {
 	configFile := getConfigPath()
 	os.MkdirAll(filepath.Dir(configFile), 0755)
 
-	config := Config{Theme: themeName}
+	config := loadConfig()
+	config.Theme = themeName
 	data, _ := json.MarshalIndent(config, "", "  ")
 	os.WriteFile(configFile, data, 0644)
 
 	fmt.Printf("Theme set to: %s\n", themeName)
 }
 
-// loadThemeConfig loads theme configuration
-func loadThemeConfig() string {
+// loadConfig loads the full configuration from file.
+func loadConfig() Config {
 	configFile := getConfigPath()
-
 	data, err := os.ReadFile(configFile)
 	if err != nil {
-		return "classic_framed" // Default theme
+		return Config{}
 	}
-
 	var config Config
-	if err := json.Unmarshal(data, &config); err != nil {
-		return "classic_framed"
-	}
+	json.Unmarshal(data, &config)
+	return config
+}
 
+// loadThemeConfig loads theme configuration
+func loadThemeConfig() string {
+	config := loadConfig()
 	if config.Theme == "" {
 		return "classic_framed"
 	}
-
 	return config.Theme
 }
 
@@ -723,9 +725,8 @@ func apiUsageCachePath() string {
 	return filepath.Join(homeDir, ".claude", "session-tracker", "api-usage-cache.json")
 }
 
-// fetchAPIUsage fetches API usage via Haiku probe.
-// Sends a minimal request to the Messages API and reads rate limit info from response headers,
-// avoiding the /api/oauth/usage endpoint which is persistently rate-limited (429).
+// fetchAPIUsage fetches API usage using the configured method.
+// Dispatches to haiku probe or oauth usage endpoint based on config.usage_api.
 // Results are cached to a file so that separate process invocations share the same cache.
 func fetchAPIUsage() *APIUsage {
 	cachePath := apiUsageCachePath()
@@ -745,6 +746,30 @@ func fetchAPIUsage() *APIUsage {
 		return nil
 	}
 
+	config := loadConfig()
+	var usage *APIUsage
+	if config.UsageAPI == "oauth_usage" {
+		usage = fetchViaOAuthUsage(token)
+	} else {
+		usage = fetchViaHaikuProbe(token)
+	}
+
+	if usage == nil {
+		return nil
+	}
+
+	// Write to file cache
+	cached := APIUsageCache{Usage: *usage, CachedAt: time.Now()}
+	if data, err := json.Marshal(cached); err == nil {
+		os.MkdirAll(filepath.Dir(cachePath), 0755)
+		os.WriteFile(cachePath, data, 0644)
+	}
+
+	return usage
+}
+
+// fetchViaHaikuProbe sends a minimal Haiku request and reads rate limit headers.
+func fetchViaHaikuProbe(token string) *APIUsage {
 	client := &http.Client{Timeout: 5 * time.Second}
 	body := `{"model":"claude-haiku-4-5-20251001","max_tokens":1,"messages":[{"role":"user","content":"hi"}]}`
 	req, err := http.NewRequest("POST", "https://api.anthropic.com/v1/messages", strings.NewReader(body))
@@ -763,7 +788,6 @@ func fetchAPIUsage() *APIUsage {
 	defer resp.Body.Close()
 	io.Copy(io.Discard, resp.Body)
 
-	// Parse rate limit headers
 	usage := APIUsage{}
 	if v := resp.Header.Get("anthropic-ratelimit-unified-5h-utilization"); v != "" {
 		if f, err := strconv.ParseFloat(v, 64); err == nil {
@@ -782,18 +806,47 @@ func fetchAPIUsage() *APIUsage {
 		usage.SevenDay.ResetsAt = v
 	}
 
-	// Only cache if we got meaningful data
 	if usage.FiveHour.ResetsAt == "" && usage.SevenDay.ResetsAt == "" {
 		return nil
 	}
+	return &usage
+}
 
-	// Write to file cache
-	cached := APIUsageCache{Usage: usage, CachedAt: time.Now()}
-	if data, err := json.Marshal(cached); err == nil {
-		os.MkdirAll(filepath.Dir(cachePath), 0755)
-		os.WriteFile(cachePath, data, 0644)
+// fetchViaOAuthUsage calls the dedicated /api/oauth/usage endpoint.
+func fetchViaOAuthUsage(token string) *APIUsage {
+	client := &http.Client{Timeout: 5 * time.Second}
+	req, err := http.NewRequest("GET", "https://api.anthropic.com/api/oauth/usage", nil)
+	if err != nil {
+		return nil
 	}
 
+	req.Header.Set("Authorization", "Bearer "+token)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("anthropic-beta", "oauth-2025-04-20")
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		return nil
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil
+	}
+
+	var usage APIUsage
+	if err := json.Unmarshal(body, &usage); err != nil {
+		return nil
+	}
+
+	if usage.FiveHour.ResetsAt == "" && usage.SevenDay.ResetsAt == "" {
+		return nil
+	}
 	return &usage
 }
 
