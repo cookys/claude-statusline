@@ -131,12 +131,11 @@ type SessionUsageResult struct {
 	Duration         time.Duration
 }
 
-// Cache
-var (
-	apiUsageCache   *APIUsage
-	apiUsageExpires time.Time
-	cacheMutex      sync.RWMutex
-)
+// APIUsageCache wraps APIUsage with a timestamp for file-based caching.
+type APIUsageCache struct {
+	Usage    APIUsage  `json:"usage"`
+	CachedAt time.Time `json:"cached_at"`
+}
 
 func main() {
 	// Command line arguments
@@ -718,17 +717,28 @@ func getOAuthToken() string {
 	return creds.ClaudeAiOauth.AccessToken
 }
 
+// apiUsageCachePath returns the file path for the API usage cache.
+func apiUsageCachePath() string {
+	homeDir, _ := os.UserHomeDir()
+	return filepath.Join(homeDir, ".claude", "session-tracker", "api-usage-cache.json")
+}
+
 // fetchAPIUsage fetches API usage via Haiku probe.
 // Sends a minimal request to the Messages API and reads rate limit info from response headers,
 // avoiding the /api/oauth/usage endpoint which is persistently rate-limited (429).
+// Results are cached to a file so that separate process invocations share the same cache.
 func fetchAPIUsage() *APIUsage {
-	cacheMutex.RLock()
-	if apiUsageCache != nil && time.Now().Before(apiUsageExpires) {
-		result := apiUsageCache
-		cacheMutex.RUnlock()
-		return result
+	cachePath := apiUsageCachePath()
+
+	// Try file-based cache first
+	if data, err := os.ReadFile(cachePath); err == nil {
+		var cached APIUsageCache
+		if err := json.Unmarshal(data, &cached); err == nil {
+			if time.Since(cached.CachedAt) < 5*time.Minute {
+				return &cached.Usage
+			}
+		}
 	}
-	cacheMutex.RUnlock()
 
 	token := getOAuthToken()
 	if token == "" {
@@ -742,7 +752,7 @@ func fetchAPIUsage() *APIUsage {
 		return nil
 	}
 
-	req.Header.Set("Authorization", "Bearer "+token)
+	req.Header.Set("x-api-key", token)
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("anthropic-version", "2023-06-01")
 
@@ -777,10 +787,12 @@ func fetchAPIUsage() *APIUsage {
 		return nil
 	}
 
-	cacheMutex.Lock()
-	apiUsageCache = &usage
-	apiUsageExpires = time.Now().Add(5 * time.Minute)
-	cacheMutex.Unlock()
+	// Write to file cache
+	cached := APIUsageCache{Usage: usage, CachedAt: time.Now()}
+	if data, err := json.Marshal(cached); err == nil {
+		os.MkdirAll(filepath.Dir(cachePath), 0755)
+		os.WriteFile(cachePath, data, 0644)
+	}
 
 	return &usage
 }
